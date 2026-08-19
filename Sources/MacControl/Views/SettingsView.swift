@@ -18,6 +18,30 @@ struct SettingsView: View {
                     .font(TypeScale.caption)
                     .foregroundStyle(Palette.muted)
             }
+            Section(L10n.widgets) {
+                Toggle(L10n.showWidgets, isOn: $model.preferences.desktopWidgets)
+                Toggle(L10n.showCPU, isOn: $model.preferences.widgetCPU)
+                    .disabled(!model.preferences.desktopWidgets)
+                Toggle(L10n.showRAM, isOn: $model.preferences.widgetRAM)
+                    .disabled(!model.preferences.desktopWidgets)
+                Toggle(L10n.showTemp, isOn: $model.preferences.widgetTemp)
+                    .disabled(!model.preferences.desktopWidgets)
+                Toggle(L10n.showFan, isOn: $model.preferences.widgetFan)
+                    .disabled(!model.preferences.desktopWidgets)
+                if model.host.battery.present {
+                    Toggle(L10n.showBattery, isOn: $model.preferences.widgetBattery)
+                        .disabled(!model.preferences.desktopWidgets)
+                }
+                Toggle(L10n.showDisk, isOn: $model.preferences.widgetDisk)
+                    .disabled(!model.preferences.desktopWidgets)
+                Button(L10n.resetWidgetPositions) {
+                    model.resetDesktopWidgets()
+                }
+                .disabled(!model.preferences.desktopWidgets)
+                Text(L10n.widgetHint)
+                    .font(TypeScale.caption)
+                    .foregroundStyle(Palette.muted)
+            }
             Section(L10n.menuBar) {
                 Toggle(L10n.showCPU, isOn: $model.preferences.menuCPU)
                 Toggle(L10n.showRAM, isOn: $model.preferences.menuRAM)

@@ -8,6 +8,9 @@ struct CleanupView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             header
+            if showStats {
+                CleanupStatsPanel(model: model)
+            }
             content
             actions
         }
@@ -34,12 +37,6 @@ struct CleanupView: View {
                 Text(L10n.cleanup)
                     .font(TypeScale.display)
                 Spacer()
-                if model.junkTotalSize > 0 {
-                    Text("\(L10n.foundSpace) \(Formatters.bytes(model.junkTotalSize))")
-                        .font(TypeScale.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.muted)
-                }
                 Button(model.junkCategories.isEmpty ? L10n.scanJunk : L10n.refresh) {
                     model.scanJunk()
                 }
@@ -72,6 +69,12 @@ struct CleanupView: View {
                     .foregroundStyle(Palette.muted)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
+                if model.lastFreedSize > 0 {
+                    Text("\(L10n.lastFreed) · \(Formatters.bytes(model.lastFreedSize))")
+                        .font(TypeScale.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(Palette.success)
+                }
                 Button(L10n.scanJunk) { model.scanJunk() }
                 Spacer()
             }
@@ -92,7 +95,7 @@ struct CleanupView: View {
         return Panel {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack(alignment: .top, spacing: Spacing.sm) {
-                    if category.kind != .trash {
+                    if category.kind != .trash, category.items.contains(where: { $0.risk != .critical }) {
                         Toggle("", isOn: Binding(
                             get: { categorySelected(category) },
                             set: { model.toggleJunkCategory(category, $0) }
@@ -179,11 +182,15 @@ struct CleanupView: View {
                     .foregroundStyle(Palette.success)
             }
             Button(L10n.moveToTrash) {
-                model.pendingJunkTrash = true
+                model.requestJunkTrash()
             }
             .buttonStyle(.borderedProminent)
             .disabled(model.selectedJunk.isEmpty)
         }
+    }
+
+    private var showStats: Bool {
+        !model.junkCategories.isEmpty
     }
 
     private var junkConfirmTitle: String {
@@ -203,6 +210,103 @@ struct CleanupView: View {
     private func categoryRisk(_ category: JunkCategory) -> JunkRisk? {
         let highest = category.items.map(\.risk).max() ?? .safe
         return highest == .safe ? nil : highest
+    }
+}
+
+struct CleanupStatsPanel: View {
+    @ObservedObject var model: AppModel
+
+    var body: some View {
+        Panel {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(L10n.cleanupStats)
+                    .font(TypeScale.caption)
+                    .foregroundStyle(Palette.muted)
+                tiles
+                if model.junkTotalSize > 0 {
+                    breakdown
+                }
+            }
+        }
+    }
+
+    private var tiles: some View {
+        let columns = [GridItem(.adaptive(minimum: 118), spacing: Spacing.sm)]
+        return LazyVGrid(columns: columns, alignment: .leading, spacing: Spacing.sm) {
+            StatTile(
+                title: L10n.foundTotal,
+                value: Formatters.bytes(model.junkTotalSize),
+                tone: Palette.accent,
+                symbol: "internaldrive"
+            )
+            StatTile(
+                title: L10n.willRemove,
+                value: Formatters.bytes(model.selectedJunkSize),
+                detail: model.selectedJunkCount > 0
+                    ? "\(model.selectedJunkCount) \(L10n.filesCount)"
+                    : nil,
+                tone: model.selectedJunkSize > 0 ? Palette.efficiency : Palette.muted,
+                symbol: "trash"
+            )
+            StatTile(
+                title: L10n.filesLabel,
+                value: "\(model.junkFileCount)",
+                tone: Palette.success,
+                symbol: "doc.on.doc"
+            )
+            StatTile(
+                title: L10n.sensitiveSpace,
+                value: Formatters.bytes(model.junkCriticalSize),
+                tone: model.junkCriticalSize > 0 ? Palette.danger : Palette.muted,
+                symbol: "exclamationmark.triangle"
+            )
+            if model.lastFreedSize > 0 {
+                StatTile(
+                    title: L10n.lastFreed,
+                    value: Formatters.bytes(model.lastFreedSize),
+                    tone: Palette.success,
+                    symbol: "checkmark.circle"
+                )
+            }
+        }
+    }
+
+    private var breakdown: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(L10n.breakdown)
+                .font(TypeScale.caption)
+                .foregroundStyle(Palette.muted)
+            ShareBar(slices: shareSlices)
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 160), spacing: Spacing.sm)],
+                alignment: .leading,
+                spacing: 4
+            ) {
+                ForEach(model.junkCategories) { category in
+                    HStack(spacing: 6) {
+                        Capsule()
+                            .fill(junkKindTone(category.kind))
+                            .frame(width: 8, height: 8)
+                        Text(category.kind.title)
+                            .font(TypeScale.caption)
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
+                        Text(Formatters.bytes(category.size))
+                            .font(TypeScale.caption)
+                            .monospacedDigit()
+                            .foregroundStyle(Palette.muted)
+                    }
+                }
+            }
+        }
+    }
+
+    private var shareSlices: [(ratio: Double, tone: Color)] {
+        let total = Double(model.junkTotalSize)
+        guard total > 0 else { return [] }
+        return model.junkCategories.map { category in
+            (Double(category.size) / total, junkKindTone(category.kind))
+        }
     }
 }
 

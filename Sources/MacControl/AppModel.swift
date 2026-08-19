@@ -49,6 +49,7 @@ final class AppModel: ObservableObject {
     @Published var pendingJunkTrash = false
     @Published var pendingEmptyTrash = false
     @Published var junkStatus: String?
+    @Published var lastFreedSize: UInt64 = 0
 
     let machine = MachineInfo.current
 
@@ -58,6 +59,7 @@ final class AppModel: ObservableObject {
     private let queue = DispatchQueue(label: "com.cgs.maccontrol.sample", qos: .utility)
     private let janitorQueue = DispatchQueue(label: "com.cgs.maccontrol.janitor", qos: .utility)
     private let live = LiveConfig()
+    private let desktopWidgets = DesktopWidgetController()
     private var timer: DispatchSourceTimer?
     private var fanWriteTask: Task<Void, Never>?
     private var lastMenu = ""
@@ -126,8 +128,20 @@ final class AppModel: ObservableObject {
         junkCategories.reduce(0) { $0 + $1.size }
     }
 
+    var junkFileCount: Int {
+        junkCategories.reduce(0) { $0 + $1.fileCount }
+    }
+
+    var junkCriticalSize: UInt64 {
+        junkCategories.flatMap(\.items).filter { $0.risk == .critical }.map(\.size).reduce(0, +)
+    }
+
     var selectedJunkSize: UInt64 {
         junkScanner.compactSelection(selectedJunk).reduce(0) { $0 + junkSize(for: $1) }
+    }
+
+    var selectedJunkCount: Int {
+        junkScanner.compactSelection(selectedJunk).count
     }
 
     var selectedJunkRisk: JunkRisk {
@@ -203,8 +217,15 @@ final class AppModel: ObservableObject {
         fanTarget = fan.targetRPM > 0 ? fan.targetRPM : max(fan.minRPM, 1500)
         live.menuTemp = preferences.menuTemp
         live.menuFan = preferences.menuFan
+        applyWidgetLiveFlags()
         preferences.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+                DispatchQueue.main.async {
+                    self?.applyWidgetLiveFlags()
+                    self?.desktopWidgets.sync()
+                }
+            }
             .store(in: &cancellables)
         preferences.$alwaysOnTop
             .dropFirst()
@@ -313,13 +334,58 @@ final class AppModel: ObservableObject {
         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
     }
 
+    func requestJunkTrash() {
+        if selectedJunkRisk == .critical {
+            confirmUltraSensitiveTrash()
+            return
+        }
+        pendingJunkTrash = true
+    }
+
     func trashSelectedJunk() {
-        let paths = junkScanner.allowedTrashPaths(junkScanner.compactSelection(selectedJunk))
+        trashSelectedJunk(allowUltraSensitive: selectedJunkRisk == .critical)
+    }
+
+    private func confirmUltraSensitiveTrash() {
+        let first = NSAlert()
+        first.alertStyle = .critical
+        first.messageText = L10n.ultraAlertTitle
+        first.informativeText = L10n.ultraAlertBody
+        first.addButton(withTitle: L10n.cancel)
+        first.addButton(withTitle: L10n.ultraAlertContinue)
+        first.buttons.last?.hasDestructiveAction = true
+        guard first.runModal() == .alertSecondButtonReturn else { return }
+
+        let labels = ultraSensitiveLabels()
+        let second = NSAlert()
+        second.alertStyle = .critical
+        second.messageText = L10n.ultraAlertTitle2
+        second.informativeText = L10n.ultraAlertBody2 + labels.joined(separator: "\n")
+        second.addButton(withTitle: L10n.cancel)
+        second.addButton(withTitle: L10n.ultraAlertConfirm)
+        second.buttons.last?.hasDestructiveAction = true
+        guard second.runModal() == .alertSecondButtonReturn else { return }
+        trashSelectedJunk(allowUltraSensitive: true)
+    }
+
+    private func ultraSensitiveLabels() -> [String] {
+        let rows = junkCategories.flatMap(\.items) + junkChildren.values.flatMap(\.items)
+        return rows.filter { $0.risk == .critical && isJunkSelected($0.path) }
+            .map { "• \($0.name)  \(Formatters.bytes($0.size))" }
+    }
+
+    private func trashSelectedJunk(allowUltraSensitive: Bool) {
+        let paths = junkScanner.allowedTrashPaths(
+            junkScanner.compactSelection(selectedJunk),
+            allowUltraSensitive: allowUltraSensitive
+        )
         guard !paths.isEmpty else { return }
+        let freed = paths.reduce(0) { $0 + junkSize(for: $1) }
         janitorQueue.async { [weak self, janitor] in
             do {
                 try janitor.moveToTrash(paths)
                 DispatchQueue.main.async {
+                    self?.lastFreedSize = freed
                     self?.junkStatus = L10n.trashDone
                     self?.selectedJunk = []
                     self?.scanJunk()
@@ -333,10 +399,12 @@ final class AppModel: ObservableObject {
     }
 
     func emptyUserTrash() {
+        let freed = junkCategories.first(where: { $0.kind == .trash })?.size ?? 0
         janitorQueue.async { [weak self, janitor] in
             do {
                 try janitor.emptyTrash()
                 DispatchQueue.main.async {
+                    if freed > 0 { self?.lastFreedSize = freed }
                     self?.junkStatus = L10n.trashDone
                     self?.scanJunk()
                 }
@@ -401,6 +469,38 @@ final class AppModel: ObservableObject {
         restartTimer()
         NSApplication.shared.appearance = nil
         Self.applyAlwaysOnTop(preferences.alwaysOnTop)
+        applyWidgetLiveFlags()
+        desktopWidgets.attach(self)
+    }
+
+    func showMainWindow() {
+        NSApp.activate(ignoringOtherApps: true)
+        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" || $0.title == L10n.appName }) {
+            window.makeKeyAndOrderFront(nil)
+        }
+        Self.applyAlwaysOnTop(preferences.alwaysOnTop)
+    }
+
+    func hideDesktopWidget(_ kind: DesktopWidgetKind) {
+        switch kind {
+        case .cpu: preferences.widgetCPU = false
+        case .memory: preferences.widgetRAM = false
+        case .temperature: preferences.widgetTemp = false
+        case .fan: preferences.widgetFan = false
+        case .battery: preferences.widgetBattery = false
+        case .disk: preferences.widgetDisk = false
+        }
+        desktopWidgets.sync()
+    }
+
+    func resetDesktopWidgets() {
+        desktopWidgets.resetPositions()
+    }
+
+    private func applyWidgetLiveFlags() {
+        live.widgetsActive = preferences.hasActiveDesktopWidget
+        live.widgetTemp = preferences.desktopWidgets && preferences.widgetTemp
+        live.widgetFan = preferences.desktopWidgets && preferences.widgetFan
     }
 
     func setWindowVisible(_ visible: Bool) {
@@ -434,15 +534,15 @@ final class AppModel: ObservableObject {
             guard !live.paused else { return }
             let ticks = live.bump()
             let visible = live.visible
-            if !visible, !ticks.isMultiple(of: 2) { return }
+            if !visible, !live.widgetsActive, !ticks.isMultiple(of: 2) { return }
             let section = live.section
             let onDash = section == .dashboard
             let request = SampleRequest(
                 processes: LiveConfig.processDepth(visible: visible, section: section, ticks: ticks),
                 fullSensors: visible && section == .temperatures,
                 diskIO: visible && onDash && ticks.isMultiple(of: 3),
-                fan: (visible && (onDash || section == .fan)) || live.menuFan,
-                thermal: (visible && (onDash || section == .temperatures)) || live.menuTemp,
+                fan: (visible && (onDash || section == .fan)) || live.menuFan || live.widgetFan,
+                thermal: (visible && (onDash || section == .temperatures)) || live.menuTemp || live.widgetTemp,
                 network: visible && onDash
             )
             let bundle = sampler.sample(request)
@@ -596,6 +696,9 @@ private final class LiveConfig: @unchecked Sendable {
     var visible = true
     var menuTemp = true
     var menuFan = true
+    var widgetsActive = false
+    var widgetTemp = false
+    var widgetFan = false
     var section: AppSection = .dashboard
     private var ticks = 0
     private let lock = NSLock()

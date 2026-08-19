@@ -114,6 +114,9 @@ struct MenuBarContent: View {
         Button(model.preferences.paused ? L10n.resume : L10n.pause) {
             model.togglePause()
         }
+        Button(L10n.showWidgets) {
+            model.preferences.desktopWidgets.toggle()
+        }
         Divider()
         Button(L10n.dashboard) { openSection(.dashboard) }
         Button(L10n.temperatures) { openSection(.temperatures) }
@@ -134,12 +137,11 @@ struct MenuBarContent: View {
     }
 
     private func showMain() {
-        NSApp.activate(ignoringOtherApps: true)
-        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" || $0.title == L10n.appName }) {
-            window.makeKeyAndOrderFront(nil)
-        } else {
-            openWindow(id: "main")
+        model.showMainWindow()
+        if NSApp.windows.contains(where: { $0.identifier?.rawValue == "main" || $0.title == L10n.appName }) {
+            return
         }
+        openWindow(id: "main")
         AppModel.applyAlwaysOnTop(model.preferences.alwaysOnTop)
     }
 }

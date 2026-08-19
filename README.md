@@ -12,6 +12,7 @@ Le code source est public. Les versions sont publiées sur GitHub, hors de l’A
 - Applications : contrôle de signature, désinstallation, fichiers restants
 - Nettoyage : caches, journaux, restes d’outils de développement, fichiers cachés
 - Barre de menus : processeur, mémoire, température, ventilateur, batterie
+- Widgets bureau : processeur, mémoire, température, ventilateur, batterie, disque, sur le fond d’écran
 - Apparence : suit le thème clair ou sombre de macOS
 
 ## Configuration requise

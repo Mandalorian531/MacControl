@@ -90,6 +90,72 @@ struct Panel<Content: View>: View {
     }
 }
 
+struct StatTile: View {
+    let title: String
+    let value: String
+    var detail: String? = nil
+    var tone: Color = Palette.accent
+    var symbol: String? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                if let symbol {
+                    Image(systemName: symbol)
+                        .font(TypeScale.micro)
+                        .foregroundStyle(tone)
+                }
+                Text(title)
+                    .font(TypeScale.caption)
+                    .foregroundStyle(Palette.muted)
+                    .lineLimit(1)
+            }
+            Text(value)
+                .font(TypeScale.headline)
+                .foregroundStyle(tone)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            if let detail {
+                Text(detail)
+                    .font(TypeScale.micro)
+                    .foregroundStyle(Palette.muted)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.sm)
+        .background(Palette.track, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+struct ShareBar: View {
+    let slices: [(ratio: Double, tone: Color)]
+
+    var body: some View {
+        let visible = slices.filter { $0.ratio > 0 }
+        let total = visible.reduce(0.0) { $0 + $1.ratio }
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Palette.track)
+                HStack(spacing: 2) {
+                    ForEach(Array(visible.enumerated()), id: \.offset) { _, slice in
+                        let share = total > 0 ? slice.ratio / total : 0
+                        let gutter = CGFloat(max(visible.count - 1, 0)) * 2
+                        Capsule()
+                            .fill(slice.tone)
+                            .frame(width: max(4, (geo.size.width - gutter) * share))
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .frame(height: 10)
+        .clipped()
+    }
+}
+
 struct UsageBar: View {
     let ratio: Double
     var tone: Color = Palette.accent
@@ -174,5 +240,18 @@ func thermalColor(_ state: ProcessInfo.ThermalState) -> Color {
     case .fair: Palette.warning
     case .serious, .critical: Palette.danger
     @unknown default: Palette.success
+    }
+}
+
+func junkKindTone(_ kind: JunkKind) -> Color {
+    switch kind {
+    case .userCache: Palette.accent
+    case .browser: Palette.efficiency
+    case .logs: Palette.muted
+    case .developer: Palette.success
+    case .hidden: Palette.warning
+    case .temporary: Palette.efficiency
+    case .backup: Palette.danger
+    case .trash: Palette.muted
     }
 }

@@ -127,8 +127,8 @@ public enum L10n {
     public static let openWindow = pick(fr: "Ouvrir la fenêtre", en: "Open window")
     public static let quitApp = pick(fr: "Quitter MacControl", en: "Quit MacControl")
     public static let samplingHint = pick(
-        fr: "Quand la fenêtre est cachée, MacControl se met en veille pour limiter l’usage du processeur.",
-        en: "When the window is hidden, MacControl idles to keep CPU use down."
+        fr: "Quand la fenêtre est cachée, MacControl se met en veille. Les widgets bureau gardent une mesure légère.",
+        en: "When the window is hidden, MacControl idles. Desktop widgets keep a light sample."
     )
     public static let resetPeaks = pick(fr: "Réinitialiser les pics", en: "Reset peaks")
     public static let activityMonitor = pick(fr: "Moniteur d’activité", en: "Activity Monitor")
@@ -210,6 +210,25 @@ public enum L10n {
         fr: "Critique : la sélection contient des sauvegardes iPhone / iPad ou des archives Xcode. Les mettre à la Corbeille peut faire perdre des données difficiles à retrouver. Continuer ?",
         en: "Critical: the selection includes iPhone / iPad backups or Xcode archives. Moving them to Trash can lose data that is hard to replace. Continue?"
     )
+    public static let ultraAlertTitle = pick(
+        fr: "Données ultra sensibles",
+        en: "Highly sensitive data"
+    )
+    public static let ultraAlertBody = pick(
+        fr: "Cette sélection contient des sauvegardes iPhone / iPad ou des archives Xcode. Ce ne sont pas des caches. Les supprimer peut empêcher de restaurer un iPhone, de republier une app, ou de récupérer des builds. MacControl ne les coche jamais tout seul. Annulez si vous n’êtes pas certain.",
+        en: "This selection includes iPhone / iPad backups or Xcode archives. These are not caches. Removing them can block a phone restore, an App Store upload, or recovery of builds. MacControl never ticks them on its own. Cancel if you are not sure."
+    )
+    public static let ultraAlertContinue = pick(fr: "Je comprends le risque", en: "I understand the risk")
+    public static let ultraAlertTitle2 = pick(
+        fr: "Dernière confirmation",
+        en: "Final confirmation"
+    )
+    public static let ultraAlertBody2 = pick(
+        fr: "Confirmez une dernière fois. Ces éléments iront à la Corbeille. Si vous videz la Corbeille ensuite, la récupération n’est plus garantie.\n\n",
+        en: "Confirm one last time. These items will go to Trash. If you then empty Trash, recovery is not guaranteed.\n\n"
+    )
+    public static let ultraAlertConfirm = pick(fr: "Mettre à la Corbeille quand même", en: "Move to Trash anyway")
+    public static let junkRiskUltra = pick(fr: "ultra sensible", en: "highly sensitive")
     public static let confirmJunkCaution = pick(
         fr: "Attention : la sélection contient des caches système ou des fichiers de développement. Des apps peuvent se reconnecter ou retélécharger des données. Continuer ?",
         en: "Caution: the selection includes system caches or developer files. Apps may sign in again or download data again. Continue?"
@@ -217,8 +236,8 @@ public enum L10n {
     public static let junkRiskCaution = pick(fr: "attention", en: "caution")
     public static let junkRiskCritical = pick(fr: "critique", en: "critical")
     public static let selectedCriticalHint = pick(
-        fr: "Éléments critiques cochés. Vérifiez avant d’envoyer à la Corbeille.",
-        en: "Critical items are ticked. Check them before moving to Trash."
+        fr: "Données ultra sensibles cochées. Une alerte de confirmation sera exigée.",
+        en: "Highly sensitive data is ticked. A confirmation alert will be required."
     )
     public static let selectedCautionHint = pick(
         fr: "Certains éléments cochés peuvent faire reconnecter des apps.",
@@ -240,13 +259,20 @@ public enum L10n {
     public static let junkSummaryCache = pick(fr: "Fichiers temporaires des applications, régénérés au besoin.", en: "App cache files. They come back if needed.")
     public static let junkSummaryBrowser = pick(fr: "Cache Safari, Chrome et les autres navigateurs.", en: "Safari, Chrome, and other browser caches.")
     public static let junkSummaryLogs = pick(fr: "Journaux d’applications. Sans effet sur vos documents.", en: "App logs. Your documents stay untouched.")
-    public static let junkSummaryDeveloper = pick(fr: "DerivedData, Homebrew, npm et caches similaires.", en: "DerivedData, Homebrew, npm, and similar caches.")
+    public static let junkSummaryDeveloper = pick(
+        fr: "DerivedData, Homebrew, npm. Les archives Xcode sont ultra sensibles et jamais cochées seules.",
+        en: "DerivedData, Homebrew, npm. Xcode archives are highly sensitive and never ticked on their own."
+    )
     public static let junkSummaryHidden = pick(fr: "Fichiers .DS_Store et assimilés dans vos dossiers.", en: ".DS_Store and similar files in your folders.")
     public static let junkSummaryTemporary = pick(fr: "Fichiers de travail déjà destinés à disparaître.", en: "Working files that were already meant to go.")
-    public static let junkSummaryBackup = pick(fr: "Sauvegardes d’appareils iOS. Décochez si vous en avez encore besoin.", en: "iOS device backups. Untick if you still need them.")
+    public static let junkSummaryBackup = pick(
+        fr: "Sauvegardes iPhone / iPad. Ultra sensibles. Jamais cochées automatiquement. Une alerte double est exigée.",
+        en: "iPhone / iPad backups. Highly sensitive. Never ticked automatically. A two-step alert is required."
+    )
     public static let junkSummaryTrash = pick(fr: "Déjà dans la Corbeille. Vider les efface définitivement.", en: "Already in Trash. Emptying deletes them for good.")
     public static let hiddenBadge = pick(fr: "caché", en: "hidden")
     public static let filesCount = pick(fr: "fichiers", en: "files")
+    public static let filesLabel = pick(fr: "Fichiers", en: "Files")
     public static let truncated = pick(fr: "liste partielle", en: "partial list")
     public static let noJunk = pick(
         fr: "Aucun fichier inutile trouvé. Si la liste est vide à tort, autorisez l’accès aux dossiers dans Réglages système.",
@@ -258,6 +284,21 @@ public enum L10n {
     public static let hideDetails = pick(fr: "Masquer", en: "Hide")
     public static let scanningJunk = pick(fr: "Recherche des fichiers inutiles…", en: "Looking for junk files…")
     public static let foundSpace = pick(fr: "Espace récupérable", en: "Reclaimable space")
+    public static let widgets = pick(fr: "Widgets bureau", en: "Desktop widgets")
+    public static let showWidgets = pick(fr: "Afficher sur le bureau", en: "Show on the desktop")
+    public static let widgetHint = pick(
+        fr: "Les widgets restent sur le fond d’écran, derrière tes fenêtres. Glisse-les pour les placer.",
+        en: "Widgets stay on the wallpaper, behind your windows. Drag them to place them."
+    )
+    public static let resetWidgetPositions = pick(fr: "Réinitialiser les positions", en: "Reset positions")
+    public static let hideWidget = pick(fr: "Masquer ce widget", en: "Hide this widget")
+    public static let showDisk = pick(fr: "Afficher le disque", en: "Show disk")
+    public static let cleanupStats = pick(fr: "Aperçu", en: "Overview")
+    public static let foundTotal = pick(fr: "Trouvé", en: "Found")
+    public static let willRemove = pick(fr: "À retirer", en: "To remove")
+    public static let lastFreed = pick(fr: "Dernier nettoyage", en: "Last cleanup")
+    public static let sensitiveSpace = pick(fr: "Ultra sensible", en: "Highly sensitive")
+    public static let breakdown = pick(fr: "Répartition", en: "Breakdown")
 }
 
 public enum RefreshPace: String, CaseIterable, Identifiable, Sendable {

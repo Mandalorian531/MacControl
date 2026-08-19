@@ -13,7 +13,7 @@ public enum JunkRisk: Int, Comparable, Sendable {
         switch self {
         case .safe: ""
         case .caution: L10n.junkRiskCaution
-        case .critical: L10n.junkRiskCritical
+        case .critical: L10n.junkRiskUltra
         }
     }
 }
@@ -184,8 +184,15 @@ public final class JunkScanner: @unchecked Sendable {
         return kept
     }
 
-    public func allowedTrashPaths(_ paths: [String]) -> [String] {
-        paths.filter { PathGuard.isSafeToTrashJunk(URL(fileURLWithPath: $0), home: home, temporary: fileManager.temporaryDirectory) }
+    public func allowedTrashPaths(_ paths: [String], allowUltraSensitive: Bool = false) -> [String] {
+        paths.filter {
+            PathGuard.isSafeToTrashJunk(
+                URL(fileURLWithPath: $0),
+                home: home,
+                temporary: fileManager.temporaryDirectory,
+                allowUltraSensitive: allowUltraSensitive
+            )
+        }
     }
 
     private func collect(roots: [(URL, Bool)], kind: JunkKind, claimed: inout Set<String>, budget: MeasureBudget) -> [JunkNode] {
@@ -455,8 +462,14 @@ enum PathGuard {
         skippedNames.contains(url.lastPathComponent)
     }
 
+    static func isUltraSensitive(_ path: String) -> Bool {
+        path.contains("/MobileSync/Backup")
+            || path.contains("/MobileSync")
+            || path.contains("/Xcode/Archives")
+    }
+
     static func classify(path: String, name: String, kind: JunkKind, recommended: Bool) -> (risk: JunkRisk, recommended: Bool) {
-        if kind == .backup || path.contains("/MobileSync/Backup") || path.contains("/Xcode/Archives") {
+        if kind == .backup || isUltraSensitive(path) {
             return (.critical, false)
         }
         if kind == .trash {
@@ -519,10 +532,11 @@ enum PathGuard {
         return false
     }
 
-    static func isSafeToTrashJunk(_ url: URL, home: URL, temporary: URL) -> Bool {
+    static func isSafeToTrashJunk(_ url: URL, home: URL, temporary: URL, allowUltraSensitive: Bool = false) -> Bool {
         let path = url.path
         let homePath = home.path
         if isProtected(path, home: homePath) { return false }
+        if isUltraSensitive(path), !allowUltraSensitive { return false }
         let allowed = [
             homePath + "/Library/Caches",
             homePath + "/Library/Logs",
