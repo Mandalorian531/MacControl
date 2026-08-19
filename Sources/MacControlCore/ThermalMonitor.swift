@@ -22,6 +22,9 @@ public final class ThermalMonitor: @unchecked Sendable {
         var storage: Double?
         var gpu: Double?
         for item in services {
+            if !detail, item.group != .soc, item.group != .storage, item.group != .gpu {
+                continue
+            }
             guard let event = IOHIDServiceClientCopyEvent(item.service, Int64(kIOHIDEventTypeTemperature), 0, 0) else {
                 continue
             }

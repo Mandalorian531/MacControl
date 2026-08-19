@@ -10,6 +10,7 @@ struct MacControlApp: App {
         Window(L10n.appName, id: "main") {
             RootView(model: model)
                 .frame(minWidth: 860, minHeight: 540)
+                .background(Palette.background)
                 .onAppear { model.start() }
         }
         .defaultSize(width: 980, height: 640)

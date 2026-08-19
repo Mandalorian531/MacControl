@@ -38,11 +38,23 @@ final class AppModel: ObservableObject {
     @Published var pendingUninstall: InstalledApp?
     @Published var pendingResidues = false
     @Published var janitorStatus: String?
+    @Published var junkCategories: [JunkCategory] = []
+    @Published var junkQuery = ""
+    @Published var junkLoading = false
+    @Published var selectedJunk: Set<String> = []
+    @Published var expandedJunk: Set<String> = []
+    @Published var expandedCategories: Set<String> = []
+    @Published var junkChildren: [String: JunkListing] = [:]
+    @Published var junkLoadingPaths: Set<String> = []
+    @Published var pendingJunkTrash = false
+    @Published var pendingEmptyTrash = false
+    @Published var junkStatus: String?
 
     let machine = MachineInfo.current
 
     private let sampler = MetricsSampler()
     private let janitor = AppJanitor()
+    private let junkScanner = JunkScanner()
     private let queue = DispatchQueue(label: "com.cgs.maccontrol.sample", qos: .utility)
     private let janitorQueue = DispatchQueue(label: "com.cgs.maccontrol.janitor", qos: .utility)
     private let live = LiveConfig()
@@ -98,6 +110,87 @@ final class AppModel: ObservableObject {
         residues.filter { $0.kind != .application }.map(\.size).reduce(0, +)
     }
 
+    var filteredJunkCategories: [JunkCategory] {
+        let query = junkQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return junkCategories }
+        return junkCategories.compactMap { category in
+            let items = category.items.filter {
+                $0.name.localizedCaseInsensitiveContains(query) || $0.path.localizedCaseInsensitiveContains(query)
+            }
+            guard !items.isEmpty else { return nil }
+            return JunkCategory(kind: category.kind, items: items)
+        }
+    }
+
+    var junkTotalSize: UInt64 {
+        junkCategories.reduce(0) { $0 + $1.size }
+    }
+
+    var selectedJunkSize: UInt64 {
+        junkScanner.compactSelection(selectedJunk).reduce(0) { $0 + junkSize(for: $1) }
+    }
+
+    var selectedJunkRisk: JunkRisk {
+        var highest = JunkRisk.safe
+        for item in junkCategories.flatMap(\.items) where isJunkSelected(item.path) {
+            highest = max(highest, item.risk)
+        }
+        for item in junkChildren.values.flatMap(\.items) where isJunkSelected(item.path) {
+            highest = max(highest, item.risk)
+        }
+        return highest
+    }
+
+    var hasTrashItems: Bool {
+        junkCategories.contains { $0.kind == .trash && !$0.items.isEmpty }
+    }
+
+    func isJunkSelected(_ path: String) -> Bool {
+        if selectedJunk.contains(path) { return true }
+        return selectedJunk.contains { path.hasPrefix($0 + "/") }
+    }
+
+    func isJunkSelectionLocked(_ path: String) -> Bool {
+        selectedJunk.contains { path != $0 && path.hasPrefix($0 + "/") }
+    }
+
+    func setJunkSelected(_ path: String, _ on: Bool) {
+        if on {
+            selectedJunk.insert(path)
+            selectedJunk = selectedJunk.filter { $0 == path || !$0.hasPrefix(path + "/") }
+        } else {
+            selectedJunk.remove(path)
+        }
+    }
+
+    func setJunkExpanded(_ path: String, _ on: Bool, node: JunkNode) {
+        if on {
+            expandedJunk.insert(path)
+            loadJunkChildren(node)
+        } else {
+            expandedJunk.remove(path)
+        }
+    }
+
+    func selectRecommendedJunk() {
+        selectedJunk = Set(
+            junkCategories.flatMap(\.items).filter { $0.recommended && $0.kind != .trash }.map(\.path)
+        )
+    }
+
+    func clearJunkSelection() {
+        selectedJunk = []
+    }
+
+    func toggleJunkCategory(_ category: JunkCategory, _ on: Bool) {
+        let paths = category.items.filter { $0.kind != .trash && $0.risk != .critical }.map(\.path)
+        if on {
+            selectedJunk.formUnion(paths)
+        } else {
+            selectedJunk.subtract(Set(paths))
+        }
+    }
+
     init() {
         let first = sampler.sample(
             SampleRequest(processes: .none, fullSensors: false, diskIO: false, fan: true, thermal: true, network: false)
@@ -134,7 +227,10 @@ final class AppModel: ObservableObject {
             .sink { [weak self, live] section in
                 live.section = section
                 if section == .apps {
-                    self?.refreshApps()
+                    self?.refreshApps(force: false)
+                }
+                if section == .cleanup {
+                    self?.scanJunkIfNeeded()
                 }
             }
             .store(in: &cancellables)
@@ -143,7 +239,8 @@ final class AppModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func refreshApps() {
+    func refreshApps(force: Bool = true) {
+        if !force, !installedApps.isEmpty { return }
         janitorQueue.async { [weak self, janitor] in
             let rows = janitor.listApps()
             DispatchQueue.main.async {
@@ -153,7 +250,12 @@ final class AppModel: ObservableObject {
     }
 
     func uninstallSelected() {
-        guard let app = selectedApp, !app.isSystem else {
+        guard let app = selectedApp else { return }
+        if app.isSelf {
+            janitorStatus = L10n.cannotUninstallSelf
+            return
+        }
+        guard !app.isSystem else {
             janitorStatus = L10n.cannotUninstallSystem
             return
         }
@@ -172,6 +274,90 @@ final class AppModel: ObservableObject {
 
     func revealResidue(_ item: ResidueItem) {
         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
+    }
+
+    func scanJunkIfNeeded() {
+        guard junkCategories.isEmpty, !junkLoading else { return }
+        scanJunk()
+    }
+
+    func scanJunk() {
+        junkLoading = true
+        junkStatus = nil
+        janitorQueue.async { [weak self, junkScanner] in
+            let categories = junkScanner.scan()
+            DispatchQueue.main.async {
+                self?.junkCategories = categories
+                self?.junkChildren = [:]
+                self?.expandedJunk = []
+                self?.expandedCategories = []
+                self?.junkLoading = false
+                self?.selectRecommendedJunk()
+            }
+        }
+    }
+
+    func loadJunkChildren(_ node: JunkNode) {
+        guard node.isDirectory, junkChildren[node.path] == nil else { return }
+        junkLoadingPaths.insert(node.path)
+        janitorQueue.async { [weak self, junkScanner] in
+            let listing = junkScanner.listChildren(of: node)
+            DispatchQueue.main.async {
+                self?.junkChildren[node.path] = listing
+                self?.junkLoadingPaths.remove(node.path)
+            }
+        }
+    }
+
+    func revealJunk(_ path: String) {
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
+    }
+
+    func trashSelectedJunk() {
+        let paths = junkScanner.allowedTrashPaths(junkScanner.compactSelection(selectedJunk))
+        guard !paths.isEmpty else { return }
+        janitorQueue.async { [weak self, janitor] in
+            do {
+                try janitor.moveToTrash(paths)
+                DispatchQueue.main.async {
+                    self?.junkStatus = L10n.trashDone
+                    self?.selectedJunk = []
+                    self?.scanJunk()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.junkStatus = String(describing: error)
+                }
+            }
+        }
+    }
+
+    func emptyUserTrash() {
+        janitorQueue.async { [weak self, janitor] in
+            do {
+                try janitor.emptyTrash()
+                DispatchQueue.main.async {
+                    self?.junkStatus = L10n.trashDone
+                    self?.scanJunk()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.junkStatus = String(describing: error)
+                }
+            }
+        }
+    }
+
+    private func junkSize(for path: String) -> UInt64 {
+        if let item = junkCategories.flatMap(\.items).first(where: { $0.path == path }) {
+            return item.size
+        }
+        for listing in junkChildren.values {
+            if let item = listing.items.first(where: { $0.path == path }) {
+                return item.size
+            }
+        }
+        return 0
     }
 
     private func loadResidues(_ id: String?) {
@@ -213,6 +399,7 @@ final class AppModel: ObservableObject {
     func start() {
         guard timer == nil else { return }
         restartTimer()
+        NSApplication.shared.appearance = nil
         Self.applyAlwaysOnTop(preferences.alwaysOnTop)
     }
 
@@ -249,13 +436,14 @@ final class AppModel: ObservableObject {
             let visible = live.visible
             if !visible, !ticks.isMultiple(of: 2) { return }
             let section = live.section
+            let onDash = section == .dashboard
             let request = SampleRequest(
                 processes: LiveConfig.processDepth(visible: visible, section: section, ticks: ticks),
                 fullSensors: visible && section == .temperatures,
-                diskIO: visible && ticks.isMultiple(of: 2),
-                fan: visible || live.menuFan,
-                thermal: visible || live.menuTemp,
-                network: visible
+                diskIO: visible && onDash && ticks.isMultiple(of: 3),
+                fan: (visible && (onDash || section == .fan)) || live.menuFan,
+                thermal: (visible && (onDash || section == .temperatures)) || live.menuTemp,
+                network: visible && onDash
             )
             let bundle = sampler.sample(request)
             DispatchQueue.main.async {
@@ -345,7 +533,7 @@ final class AppModel: ObservableObject {
         peakCPU = max(peakCPU, host.cpu.total)
         peakTemp = max(peakTemp, temp)
         peakFan = max(peakFan, fan.rpm)
-        if windowVisible {
+        if windowVisible, section == .dashboard {
             var next = history
             next.push(
                 cpu: host.cpu.total,
@@ -397,6 +585,7 @@ final class AppModel: ObservableObject {
     static func applyAlwaysOnTop(_ enabled: Bool) {
         let app = NSApplication.shared
         for window in app.windows where window.identifier?.rawValue == "main" || window.title == L10n.appName {
+            window.appearance = nil
             window.level = enabled ? .floating : .normal
         }
     }
@@ -423,7 +612,7 @@ private final class LiveConfig: @unchecked Sendable {
         guard visible else { return .none }
         switch section {
         case .processes: return .all
-        case .dashboard: return ticks.isMultiple(of: 2) ? .top(8) : .none
+        case .dashboard: return ticks.isMultiple(of: 3) ? .top(8) : .none
         default: return .none
         }
     }

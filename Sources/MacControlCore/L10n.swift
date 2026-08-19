@@ -44,11 +44,11 @@ public enum L10n {
     public static let auto = pick(fr: "Automatique", en: "Automatic")
     public static let manual = pick(fr: "Manuel", en: "Manual")
     public static let apply = pick(fr: "Appliquer", en: "Apply")
-    public static let authorize = pick(fr: "Autoriser le contrôle", en: "Allow control")
+    public static let authorize = pick(fr: "Autoriser", en: "Allow")
     public static let restoreAuto = pick(fr: "Revenir en auto", en: "Return to auto")
     public static let fanHint = pick(
-        fr: "Le firmware règle les ventilos tout seul. Le mode manuel écrit dans le SMC et demande un mot de passe admin. Un régime trop bas fait monter le SoC, surtout sur un portable.",
-        en: "Firmware runs the fans on its own. Manual mode writes to the SMC and needs an admin password. Too low a speed cooks the SoC, especially on a laptop."
+        fr: "Le Mac règle le ventilateur tout seul. Le mode manuel demande un mot de passe administrateur. Évitez une vitesse trop basse, surtout sur un portable.",
+        en: "The Mac runs the fan on its own. Manual mode needs an administrator password. Avoid a very low speed, especially on a laptop."
     )
     public static let fanless = pick(
         fr: "Ce Mac n’a pas de ventilateur. La dissipation est passive.",
@@ -72,8 +72,8 @@ public enum L10n {
     public static let macPro = "Mac Pro"
     public static let appleSilicon = "Apple Silicon"
     public static let fanNeedsAdmin = pick(
-        fr: "macOS refuse l’écriture SMC depuis l’app. Autorise un helper admin une fois, puis le curseur agit directement.",
-        en: "macOS blocked the SMC write from the app. Authorize an admin helper once, then the slider talks to it directly."
+        fr: "macOS demande une autorisation pour régler le ventilateur.",
+        en: "macOS needs permission before the fan can be set."
     )
     public static let search = pick(fr: "Rechercher", en: "Search")
     public static let name = pick(fr: "Nom", en: "Name")
@@ -93,7 +93,7 @@ public enum L10n {
     public static let uptime = pick(fr: "Allumé depuis", en: "Up for")
     public static let load = pick(fr: "Charge", en: "Load")
     public static let noFan = pick(fr: "Aucun ventilateur exposé par le SMC.", en: "No fan exposed by the SMC.")
-    public static let helperReady = pick(fr: "Helper admin actif", en: "Admin helper active")
+    public static let helperReady = pick(fr: "Contrôle autorisé", en: "Control allowed")
     public static let helperFailed = pick(
         fr: "Impossible d’installer le helper. Le mot de passe a peut‑être été annulé.",
         en: "Could not install the helper. The password prompt may have been cancelled."
@@ -103,13 +103,13 @@ public enum L10n {
     public static let settings = pick(fr: "Réglages", en: "Settings")
     public static let pause = pick(fr: "Pause", en: "Pause")
     public static let resume = pick(fr: "Reprendre", en: "Resume")
-    public static let interval = pick(fr: "Intervalle", en: "Interval")
+    public static let interval = pick(fr: "Actualisation", en: "Refresh rate")
     public static let eco = pick(fr: "Économe", en: "Low impact")
     public static let balanced = pick(fr: "Équilibré", en: "Balanced")
     public static let fast = pick(fr: "Rapide", en: "Fast")
     public static let launchAtLogin = pick(fr: "Ouvrir à la connexion", en: "Open at login")
     public static let alwaysOnTop = pick(fr: "Toujours au-dessus", en: "Always on top")
-    public static let hideApple = pick(fr: "Masquer les process Apple", en: "Hide Apple processes")
+    public static let hideApple = pick(fr: "Masquer les processus Apple", en: "Hide Apple processes")
     public static let menuBar = pick(fr: "Barre de menu", en: "Menu bar")
     public static let showCPU = pick(fr: "Afficher le CPU", en: "Show CPU")
     public static let showRAM = pick(fr: "Afficher la RAM", en: "Show RAM")
@@ -121,22 +121,22 @@ public enum L10n {
     public static let peak = pick(fr: "Pic", en: "Peak")
     public static let copyPath = pick(fr: "Copier le chemin", en: "Copy path")
     public static let reveal = pick(fr: "Afficher dans le Finder", en: "Reveal in Finder")
-    public static let copySnapshot = pick(fr: "Copier un instantané", en: "Copy snapshot")
+    public static let copySnapshot = pick(fr: "Copier l’état", en: "Copy status")
     public static let processCount = pick(fr: "processus", en: "processes")
     public static let paused = pick(fr: "En pause", en: "Paused")
     public static let openWindow = pick(fr: "Ouvrir la fenêtre", en: "Open window")
     public static let quitApp = pick(fr: "Quitter MacControl", en: "Quit MacControl")
     public static let samplingHint = pick(
-        fr: "L’app échantillonne hors du thread UI. Fenêtre cachée ou couverte : 3 s, sans liste process ni I/O disque.",
-        en: "Sampling runs off the UI thread. Hidden or covered window: 3 s, no process list or disk I/O."
+        fr: "Quand la fenêtre est cachée, MacControl se met en veille pour limiter l’usage du processeur.",
+        en: "When the window is hidden, MacControl idles to keep CPU use down."
     )
     public static let resetPeaks = pick(fr: "Réinitialiser les pics", en: "Reset peaks")
     public static let activityMonitor = pick(fr: "Moniteur d’activité", en: "Activity Monitor")
     public static let about = pick(fr: "À propos", en: "About")
     public static let privacy = pick(fr: "Confidentialité", en: "Privacy")
     public static let privacyNote = pick(
-        fr: "Rien ne quitte ton Mac. Pas de compte, pas de télémétrie, pas de serveur. Les mesures restent en local. L’app est légère : échantillonnage hors du thread UI, pause possible, presque rien quand la fenêtre est cachée. Le code est public. Les seules actions qui touchent le système, ventilo manuel ou Corbeille, demandent ta confirmation.",
-        en: "Nothing leaves your Mac. No account, no telemetry, no server. Metrics stay local. The app is light: sampling off the UI thread, pause anytime, almost idle when the window is hidden. The code is public. The only system-touching actions, manual fan or Trash, wait for your confirmation."
+        fr: "Rien ne quitte cet ordinateur. Pas de compte, pas de télémétrie. Les mesures restent locales. Le réglage du ventilateur et l’envoi à la Corbeille demandent une confirmation.",
+        en: "Nothing leaves this Mac. No account, no telemetry. Metrics stay local. Fan control and Trash actions wait for confirmation."
     )
     public static let userCPU = pick(fr: "User", en: "User")
     public static let systemCPU = pick(fr: "Système", en: "System")
@@ -146,10 +146,10 @@ public enum L10n {
     public static let path = pick(fr: "Chemin", en: "Path")
     public static let idle = pick(fr: "Inactif", en: "Idle")
     public static let apps = pick(fr: "Apps", en: "Apps")
-    public static let leftovers = pick(fr: "Résidus", en: "Leftovers")
+    public static let leftovers = pick(fr: "Fichiers restants", en: "Leftover files")
     public static let uninstall = pick(fr: "Désinstaller", en: "Uninstall")
-    public static let removeResidues = pick(fr: "Supprimer les résidus", en: "Remove leftovers")
-    public static let verify = pick(fr: "Vérifier", en: "Verify")
+    public static let removeResidues = pick(fr: "Supprimer les fichiers restants", en: "Remove leftover files")
+    public static let verify = pick(fr: "Actualiser", en: "Refresh")
     public static let signature = pick(fr: "Signature", en: "Signature")
     public static let signedOK = pick(fr: "Valide", en: "Valid")
     public static let unsigned = pick(fr: "Non signée", en: "Unsigned")
@@ -158,20 +158,24 @@ public enum L10n {
     public static let version = pick(fr: "Version", en: "Version")
     public static let size = pick(fr: "Taille", en: "Size")
     public static let confirmUninstall = pick(
-        fr: "Mettre cette app et ses résidus à la Corbeille ?",
-        en: "Move this app and its leftovers to the Trash?"
+        fr: "Mettre cette application et ses fichiers restants à la Corbeille ?",
+        en: "Move this app and its leftover files to the Trash?"
     )
     public static let confirmResidues = pick(
-        fr: "Mettre ces résidus à la Corbeille ?",
-        en: "Move these leftovers to the Trash?"
+        fr: "Mettre ces fichiers restants à la Corbeille ?",
+        en: "Move these leftover files to the Trash?"
     )
     public static let leftoversHint = pick(
-        fr: "Scan limité à ta bibliothèque utilisateur. Rien n’est effacé hors Corbeille. Les apps Apple et /System sont protégées.",
-        en: "Scan stays in your user Library. Everything goes to Trash, not wiped. Apple apps and /System stay protected."
+        fr: "Sélectionnez une application pour voir ses fichiers restants. Tout va à la Corbeille. Les applications Apple restent protégées.",
+        en: "Select an app to see leftover files. Everything goes to Trash. Apple apps stay protected."
     )
     public static let cannotUninstallSystem = pick(
-        fr: "Cette app système ne se désinstalle pas d’ici.",
+        fr: "Cette application système ne se désinstalle pas d’ici.",
         en: "This system app cannot be uninstalled here."
+    )
+    public static let cannotUninstallSelf = pick(
+        fr: "MacControl ne peut pas se désinstaller lui-même.",
+        en: "MacControl cannot uninstall itself."
     )
     public static let residueKindApp = pick(fr: "Application", en: "Application")
     public static let residueKindSupport = pick(fr: "Support", en: "Support")
@@ -182,9 +186,78 @@ public enum L10n {
     public static let residueKindAgent = pick(fr: "Agent", en: "Agent")
     public static let residueKindState = pick(fr: "État", en: "State")
     public static let trashDone = pick(fr: "Envoyé à la Corbeille", en: "Moved to Trash")
-    public static let noResidues = pick(fr: "Aucun résidu trouvé.", en: "No leftovers found.")
+    public static let noResidues = pick(fr: "Aucun fichier restant.", en: "No leftover files.")
     public static let scanning = pick(fr: "Analyse…", en: "Scanning…")
-    public static let selectApp = pick(fr: "Choisis une app pour voir ses résidus.", en: "Select an app to see leftovers.")
+    public static let selectApp = pick(fr: "Sélectionnez une application pour voir ses fichiers restants.", en: "Select an app to see leftover files.")
+    public static let cleanup = pick(fr: "Nettoyage", en: "Cleanup")
+    public static let cleanupHint = pick(
+        fr: "Cochez ce que vous voulez retirer, puis envoyez-le à la Corbeille. Vous pourrez encore le récupérer ensuite.",
+        en: "Tick what you want to remove, then move it to Trash. You can still restore it later."
+    )
+    public static let scanJunk = pick(fr: "Analyser", en: "Scan")
+    public static let selectRecommended = pick(fr: "Recommandé", en: "Recommended")
+    public static let selectNone = pick(fr: "Tout décocher", en: "Clear selection")
+    public static let moveToTrash = pick(fr: "Mettre à la Corbeille", en: "Move to Trash")
+    public static let confirmJunk = pick(
+        fr: "Mettre la sélection à la Corbeille ?",
+        en: "Move the selection to the Trash?"
+    )
+    public static let confirmJunkBackup = pick(
+        fr: "La sélection contient des sauvegardes iPhone / iPad. Continuer vers la Corbeille ?",
+        en: "The selection includes iPhone / iPad backups. Move them to the Trash?"
+    )
+    public static let confirmJunkCritical = pick(
+        fr: "Critique : la sélection contient des sauvegardes iPhone / iPad ou des archives Xcode. Les mettre à la Corbeille peut faire perdre des données difficiles à retrouver. Continuer ?",
+        en: "Critical: the selection includes iPhone / iPad backups or Xcode archives. Moving them to Trash can lose data that is hard to replace. Continue?"
+    )
+    public static let confirmJunkCaution = pick(
+        fr: "Attention : la sélection contient des caches système ou des fichiers de développement. Des apps peuvent se reconnecter ou retélécharger des données. Continuer ?",
+        en: "Caution: the selection includes system caches or developer files. Apps may sign in again or download data again. Continue?"
+    )
+    public static let junkRiskCaution = pick(fr: "attention", en: "caution")
+    public static let junkRiskCritical = pick(fr: "critique", en: "critical")
+    public static let selectedCriticalHint = pick(
+        fr: "Éléments critiques cochés. Vérifiez avant d’envoyer à la Corbeille.",
+        en: "Critical items are ticked. Check them before moving to Trash."
+    )
+    public static let selectedCautionHint = pick(
+        fr: "Certains éléments cochés peuvent faire reconnecter des apps.",
+        en: "Some ticked items may make apps sign in again."
+    )
+    public static let emptyTrash = pick(fr: "Vider la Corbeille", en: "Empty Trash")
+    public static let confirmEmptyTrash = pick(
+        fr: "Vider la Corbeille définitivement ? Ce n’est pas annulable.",
+        en: "Empty the Trash permanently? This cannot be undone."
+    )
+    public static let junkKindCache = pick(fr: "Caches des applications", en: "App caches")
+    public static let junkKindBrowser = pick(fr: "Navigateurs", en: "Browsers")
+    public static let junkKindLogs = pick(fr: "Journaux", en: "Logs")
+    public static let junkKindDeveloper = pick(fr: "Outils de développement", en: "Developer tools")
+    public static let junkKindHidden = pick(fr: "Fichiers cachés", en: "Hidden files")
+    public static let junkKindTemporary = pick(fr: "Fichiers temporaires", en: "Temporary files")
+    public static let junkKindBackup = pick(fr: "Sauvegardes iPhone et iPad", en: "iPhone and iPad backups")
+    public static let junkKindTrash = pick(fr: "Corbeille", en: "Trash")
+    public static let junkSummaryCache = pick(fr: "Fichiers temporaires des applications, régénérés au besoin.", en: "App cache files. They come back if needed.")
+    public static let junkSummaryBrowser = pick(fr: "Cache Safari, Chrome et les autres navigateurs.", en: "Safari, Chrome, and other browser caches.")
+    public static let junkSummaryLogs = pick(fr: "Journaux d’applications. Sans effet sur vos documents.", en: "App logs. Your documents stay untouched.")
+    public static let junkSummaryDeveloper = pick(fr: "DerivedData, Homebrew, npm et caches similaires.", en: "DerivedData, Homebrew, npm, and similar caches.")
+    public static let junkSummaryHidden = pick(fr: "Fichiers .DS_Store et assimilés dans vos dossiers.", en: ".DS_Store and similar files in your folders.")
+    public static let junkSummaryTemporary = pick(fr: "Fichiers de travail déjà destinés à disparaître.", en: "Working files that were already meant to go.")
+    public static let junkSummaryBackup = pick(fr: "Sauvegardes d’appareils iOS. Décochez si vous en avez encore besoin.", en: "iOS device backups. Untick if you still need them.")
+    public static let junkSummaryTrash = pick(fr: "Déjà dans la Corbeille. Vider les efface définitivement.", en: "Already in Trash. Emptying deletes them for good.")
+    public static let hiddenBadge = pick(fr: "caché", en: "hidden")
+    public static let filesCount = pick(fr: "fichiers", en: "files")
+    public static let truncated = pick(fr: "liste partielle", en: "partial list")
+    public static let noJunk = pick(
+        fr: "Aucun fichier inutile trouvé. Si la liste est vide à tort, autorisez l’accès aux dossiers dans Réglages système.",
+        en: "No junk files found. If this looks wrong, allow folder access in System Settings."
+    )
+    public static let selected = pick(fr: "Sélection", en: "Selected")
+    public static let expandFolder = pick(fr: "Voir le contenu", en: "Show contents")
+    public static let showDetails = pick(fr: "Voir les fichiers", en: "Show files")
+    public static let hideDetails = pick(fr: "Masquer", en: "Hide")
+    public static let scanningJunk = pick(fr: "Recherche des fichiers inutiles…", en: "Looking for junk files…")
+    public static let foundSpace = pick(fr: "Espace récupérable", en: "Reclaimable space")
 }
 
 public enum RefreshPace: String, CaseIterable, Identifiable, Sendable {

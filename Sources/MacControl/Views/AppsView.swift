@@ -48,7 +48,7 @@ struct AppsView: View {
                     .toggleStyle(.checkbox)
                     .controlSize(.small)
                 Button(L10n.verify) {
-                    model.refreshApps()
+                    model.refreshApps(force: true)
                 }
             }
             Text(L10n.leftoversHint)
@@ -98,7 +98,7 @@ struct AppsView: View {
         .contextMenu(forSelectionType: String.self) { ids in
             if let app = model.installedApps.first(where: { ids.contains($0.id) }) {
                 Button(L10n.reveal) { model.revealApp(app) }
-                if !app.isSystem {
+                if !app.isSystem, !app.isSelf {
                     Button(L10n.uninstall) { model.pendingUninstall = app }
                 }
             }
@@ -169,7 +169,7 @@ struct AppsView: View {
                 Button(L10n.uninstall, role: .destructive) {
                     model.pendingUninstall = app
                 }
-                .disabled(app.isSystem)
+                .disabled(app.isSystem || app.isSelf)
             }
             Spacer()
             if let status = model.janitorStatus {

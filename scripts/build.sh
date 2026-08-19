@@ -16,6 +16,7 @@ mkdir -p "$DIST/Contents/MacOS" "$DIST/Contents/Resources"
 cp "$BIN/MacControl" "$DIST/Contents/MacOS/MacControl"
 cp "$BIN/smc-helper" "$DIST/Contents/MacOS/smc-helper"
 cp "$ROOT/Resources/Info.plist" "$DIST/Contents/Info.plist"
+cp "$ROOT/Resources/AppIcon.icns" "$DIST/Contents/Resources/AppIcon.icns"
 echo -n "APPL????" > "$DIST/Contents/PkgInfo"
 
 codesign --force --deep --sign - "$DIST" >/dev/null 2>&1 || true

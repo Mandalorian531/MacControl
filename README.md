@@ -1,34 +1,48 @@
 # MacControl
 
-Moniteur natif pour Mac Apple Silicon : CPU P/E, RAM, disque, réseau, températures, ventilos, batterie, processus, désinstallation avec résidus.
+Utilitaire natif pour Mac Apple Silicon. MacControl affiche l’état de la machine et permet de désinstaller des applications, d’en retirer les fichiers restants, et de libérer de l’espace en envoyant caches et fichiers inutiles à la Corbeille.
 
-Pas sur l’App Store. Le code est public, le `.dmg` est dans les [Releases](https://github.com/Mandalorian531/MacControl/releases). Tu peux l’utiliser et le modifier pour toi. Tu ne peux pas le vendre.
+Le code source est public. Les versions sont publiées sur GitHub, hors de l’App Store. La licence autorise un usage personnel et éducatif. La revente est interdite.
 
-Testée sur un Mac mini M4. Les autres M1–M5 (Air, Pro, iMac, Studio, Mini) passent par les mêmes APIs.
+## Fonctions
+
+- Vue d’ensemble : processeur (cœurs P et E), mémoire, disque, réseau, températures, batterie
+- Ventilateur : lecture via le SMC, réglage manuel après autorisation administrateur
+- Processus : liste, recherche, arrêt normal ou forcé
+- Applications : contrôle de signature, désinstallation, fichiers restants
+- Nettoyage : caches, journaux, restes d’outils de développement, fichiers cachés
+- Barre de menus : processeur, mémoire, température, ventilateur, batterie
+- Apparence : suit le thème clair ou sombre de macOS
+
+## Configuration requise
+
+- Mac Apple Silicon (M1 et suivants)
+- macOS 14 Sonoma ou version ultérieure
+- Les Mac Intel ne sont pas pris en charge
+
+L’application a été validée sur Mac mini M4. Les autres modèles Apple Silicon s’appuient sur les mêmes interfaces système.
+
+## Installation
+
+1. Téléchargez `MacControl.dmg` depuis la [dernière version](https://github.com/Mandalorian531/MacControl/releases).
+2. Ouvrez l’image disque et placez MacControl dans le dossier Applications.
+3. Au premier lancement, cliquez sur l’application avec le bouton droit, puis choisissez Ouvrir.
+
+macOS affiche un avertissement Gatekeeper. Le paquet est signé de manière ad hoc, sans notarisation Apple, faute de compte Developer. Ce comportement est attendu.
 
 ## Confidentialité
 
-Rien ne quitte ton Mac. Pas de compte, pas de télémétrie, pas de serveur à nous. CPU, températures, apps : tout reste local.
+Aucune donnée ne quitte l’ordinateur. Il n’existe ni compte, ni télémétrie, ni serveur distant.
 
-L’app est volontairement légère. L’échantillonnage tourne hors du thread UI. Tu peux la mettre en pause. Fenêtre cachée : presque rien.
-
-Le code est ici, tu peux vérifier. Les seules actions qui touchent le système (ventilo manuel, Corbeille) attendent ta confirmation. Pas de nettoyage caché, pas d’envoi de données.
-
-## Installer
-
-1. Télécharge `MacControl.dmg` dans la dernière release.
-2. Ouvre le DMG, glisse MacControl dans Applications.
-3. Au premier lancement, clic droit sur l’app → Ouvrir. Gatekeeper râle parce que le binaire n’est pas notarié (pas de compte Developer). C’est normal.
-
-Apple Silicon, macOS 14 ou plus. Intel : non.
+Les mesures restent locales. Les actions qui modifient le système (réglage du ventilateur, envoi à la Corbeille) demandent une confirmation. Le nettoyage se limite au compte utilisateur. Les dossiers système, le trousseau, Mail et les clés SSH ne sont pas analysés.
 
 ## Ventilateur
 
-La lecture passe par le SMC (`FNum`, puis chaque `Fn*`). Un Pro à deux ventilos les montre. Un Air sans ventilo le dit.
+La vitesse est lue dans le SMC. Un Mac à plusieurs ventilateurs les affiche tous. Un Mac sans ventilateur l’indique.
 
-Le mode manuel écrit dans le SMC et demande le mot de passe admin une fois (helper dans `/usr/local/libexec`). Remets l’auto après : un régime trop bas fait monter le SoC.
+Le mode manuel demande un mot de passe administrateur lors de la première utilisation. Un régime trop bas peut faire monter la température, en particulier sur un ordinateur portable. Revenez ensuite en mode automatique.
 
-## Compiler
+## Compilation
 
 ```bash
 ./scripts/build.sh
@@ -36,7 +50,7 @@ Le mode manuel écrit dans le SMC et demande le mot de passe admin une fois (hel
 open dist/MacControl.app
 ```
 
-Command Line Tools suffisent. Xcode n’est pas requis.
+Les outils de ligne de commande Apple suffisent. Xcode n’est pas nécessaire.
 
 ```bash
 make build
@@ -45,4 +59,4 @@ make dmg
 
 ## Licence
 
-[PolyForm Noncommercial 1.0.0](LICENSE). Usage perso, étude, asso, école : ok. Vendre MacControl, le mettre dans un produit payant, ou le redistribuer contre de l’argent : non.
+[PolyForm Noncommercial 1.0.0](LICENSE). Usage personnel, étude, association et établissement scolaire : autorisé. Vendre MacControl, l’intégrer à un produit payant ou le redistribuer contre rémunération : interdit.

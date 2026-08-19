@@ -8,6 +8,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     case fan
     case processes
     case apps
+    case cleanup
     case settings
 
     var id: String { rawValue }
@@ -19,6 +20,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .fan: L10n.fan
         case .processes: L10n.processes
         case .apps: L10n.apps
+        case .cleanup: L10n.cleanup
         case .settings: L10n.settings
         }
     }
@@ -30,6 +32,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .fan: "fan"
         case .processes: "list.bullet.rectangle"
         case .apps: "app.badge.checkmark"
+        case .cleanup: "trash"
         case .settings: "gearshape"
         }
     }
@@ -62,11 +65,14 @@ struct RootView: View {
                 ProcessesView(model: model)
             case .apps:
                 AppsView(model: model)
+            case .cleanup:
+                CleanupView(model: model)
             case .settings:
                 SettingsView(model: model)
             }
         }
         .navigationTitle(model.section.title)
+        .background(Palette.background)
         .background(WindowVisibility(onChange: model.setWindowVisible))
     }
 
@@ -114,6 +120,7 @@ struct MenuBarContent: View {
         Button(L10n.fan) { openSection(.fan) }
         Button(L10n.processes) { openSection(.processes) }
         Button(L10n.apps) { openSection(.apps) }
+        Button(L10n.cleanup) { openSection(.cleanup) }
         Button(L10n.settings) { openSection(.settings) }
         Divider()
         Button(L10n.quitApp) {

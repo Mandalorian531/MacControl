@@ -113,6 +113,18 @@ public final class AppJanitor: @unchecked Sendable {
         }
     }
 
+    public func emptyTrash() throws {
+        let trash = home.appendingPathComponent(".Trash")
+        guard let children = try? fileManager.contentsOfDirectory(
+            at: trash,
+            includingPropertiesForKeys: nil,
+            options: []
+        ) else { return }
+        for child in children {
+            try fileManager.removeItem(at: child)
+        }
+    }
+
     private func inspect(_ url: URL) -> InstalledApp? {
         let info = Bundle(url: url)?.infoDictionary ?? [:]
         let name = (info["CFBundleDisplayName"] as? String)
@@ -190,13 +202,12 @@ public final class AppJanitor: @unchecked Sendable {
                 return true
             }
         }
-        guard name.count >= 4 else { return false }
+        guard name.count >= 6 else { return false }
         let needle = name.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
         let hay = last.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
         return hay == needle
             || hay == "\(needle).plist"
             || hay == "\(needle).savedState"
-            || hay.hasPrefix(needle + ".")
     }
 
     private func allocatedSize(_ url: URL) -> UInt64 {
@@ -208,13 +219,13 @@ public final class AppJanitor: @unchecked Sendable {
         guard let enumerator = fileManager.enumerator(
             at: url,
             includingPropertiesForKeys: [.fileAllocatedSizeKey],
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
         ) else { return 0 }
         var total: UInt64 = 0
         var count = 0
         for case let child as URL in enumerator {
             count += 1
-            if count > 2_000 { break }
+            if count > 400 { break }
             if let size = try? child.resourceValues(forKeys: [.fileAllocatedSizeKey]).fileAllocatedSize {
                 total += UInt64(size)
             }
@@ -223,17 +234,6 @@ public final class AppJanitor: @unchecked Sendable {
     }
 
     private func isSafeToTrash(_ url: URL) -> Bool {
-        let path = url.path
-        if path.hasPrefix("/System") || path.hasPrefix("/usr") || path.hasPrefix("/bin") || path.hasPrefix("/sbin") {
-            return false
-        }
-        if path.hasPrefix("/Library") && !path.hasPrefix("/Library/Application Support") {
-            return false
-        }
-        let homePath = home.path
-        if path.hasPrefix("/Applications") { return true }
-        if path.hasPrefix(homePath + "/Applications") { return true }
-        if path.hasPrefix(homePath + "/Library") { return true }
-        return false
+        PathGuard.isSafeToTrash(url, home: home, temporary: fileManager.temporaryDirectory)
     }
 }

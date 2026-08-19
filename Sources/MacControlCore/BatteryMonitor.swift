@@ -5,10 +5,22 @@ import IOKit.ps
 public final class BatteryMonitor: @unchecked Sendable {
     private var lastExtra = BatterySnapshot.missing
     private var lastExtraAt = Date.distantPast
+    private var lastSnapshot = BatterySnapshot.missing
+    private var lastSnapshotAt = Date.distantPast
 
     public init() {}
 
     public func snapshot() -> BatterySnapshot {
+        let elapsed = Date().timeIntervalSince(lastSnapshotAt)
+        if lastSnapshot.present, elapsed < 2 { return lastSnapshot }
+        if !lastSnapshot.present, elapsed < 30, lastSnapshotAt != .distantPast { return lastSnapshot }
+        let snapshot = readSnapshot()
+        lastSnapshot = snapshot
+        lastSnapshotAt = Date()
+        return snapshot
+    }
+
+    private func readSnapshot() -> BatterySnapshot {
         guard let blob = IOPSCopyPowerSourcesInfo()?.takeRetainedValue() else {
             return .missing
         }

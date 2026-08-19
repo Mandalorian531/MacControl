@@ -98,7 +98,7 @@ struct UsageBar: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.primary.opacity(0.08))
+                    .fill(Palette.track)
                 Capsule()
                     .fill(tone)
                     .frame(width: max(4, geo.size.width * min(max(ratio, 0), 1)))
