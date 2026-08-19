@@ -2,7 +2,7 @@
 
 Moniteur natif pour Mac Apple Silicon : CPU P/E, RAM, disque, réseau, températures, ventilos, batterie, processus.
 
-Pas sur l’App Store. Le code est ici, le `.dmg` est dans les [Releases](https://github.com/Mandalorian531/MacControl/releases).
+Pas sur l’App Store. Le code est public, le `.dmg` est dans les [Releases](https://github.com/Mandalorian531/MacControl/releases). Tu peux l’utiliser et le modifier pour toi. Tu ne peux pas le vendre.
 
 Testée sur un Mac mini M4. Les autres M1–M5 (Air, Pro, iMac, Studio, Mini) passent par les mêmes APIs.
 
@@ -37,4 +37,4 @@ make dmg
 
 ## Licence
 
-MIT.
+[PolyForm Noncommercial 1.0.0](LICENSE). Usage perso, étude, asso, école : ok. Vendre MacControl, le mettre dans un produit payant, ou le redistribuer contre de l’argent : non.
