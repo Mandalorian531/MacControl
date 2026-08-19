@@ -127,8 +127,8 @@ public enum L10n {
     public static let openWindow = pick(fr: "Ouvrir la fenêtre", en: "Open window")
     public static let quitApp = pick(fr: "Quitter MacControl", en: "Quit MacControl")
     public static let samplingHint = pick(
-        fr: "Quand la fenêtre est cachée, MacControl se met en veille. Les widgets bureau gardent une mesure légère.",
-        en: "When the window is hidden, MacControl idles. Desktop widgets keep a light sample."
+        fr: "Quand la fenêtre est cachée, MacControl se met en veille. Les widgets système se mettent à jour tout seuls.",
+        en: "When the window is hidden, MacControl idles. System widgets update on their own."
     )
     public static let resetPeaks = pick(fr: "Réinitialiser les pics", en: "Reset peaks")
     public static let activityMonitor = pick(fr: "Moniteur d’activité", en: "Activity Monitor")
@@ -284,14 +284,22 @@ public enum L10n {
     public static let hideDetails = pick(fr: "Masquer", en: "Hide")
     public static let scanningJunk = pick(fr: "Recherche des fichiers inutiles…", en: "Looking for junk files…")
     public static let foundSpace = pick(fr: "Espace récupérable", en: "Reclaimable space")
-    public static let widgets = pick(fr: "Widgets bureau", en: "Desktop widgets")
-    public static let showWidgets = pick(fr: "Afficher sur le bureau", en: "Show on the desktop")
+    public static let widgets = pick(fr: "Widgets", en: "Widgets")
     public static let widgetHint = pick(
-        fr: "Les widgets restent sur le fond d’écran, derrière tes fenêtres. Glisse-les pour les placer.",
-        en: "Widgets stay on the wallpaper, behind your windows. Drag them to place them."
+        fr: "Clic droit sur le bureau → Modifier les widgets, ou ouvre le Centre de notifications. Choisis MacControl. Ils suivent le thème, les tailles et le style de macOS.",
+        en: "Right-click the desktop → Edit Widgets, or open Notification Center. Pick MacControl. They follow macOS theme, sizes, and style."
     )
-    public static let resetWidgetPositions = pick(fr: "Réinitialiser les positions", en: "Reset positions")
-    public static let hideWidget = pick(fr: "Masquer ce widget", en: "Hide this widget")
+    public static let widgetCPUHint = pick(fr: "Charge processeur et cœurs P / E.", en: "Processor load and P / E cores.")
+    public static let widgetRAMHint = pick(fr: "Mémoire utilisée et pression.", en: "Used memory and pressure.")
+    public static let widgetTempHint = pick(fr: "Température du SoC.", en: "SoC temperature.")
+    public static let widgetFanHint = pick(fr: "Vitesse du ventilateur.", en: "Fan speed.")
+    public static let widgetBatteryHint = pick(fr: "Charge et alimentation.", en: "Charge and power source.")
+    public static let widgetDiskHint = pick(fr: "Espace disque utilisé.", en: "Used disk space.")
+    public static let widgetOverviewHint = pick(
+        fr: "Processeur, mémoire, température et disque.",
+        en: "Processor, memory, temperature, and disk."
+    )
+    public static let desktopMac = pick(fr: "Pas de batterie", en: "No battery")
     public static let showDisk = pick(fr: "Afficher le disque", en: "Show disk")
     public static let cleanupStats = pick(fr: "Aperçu", en: "Overview")
     public static let foundTotal = pick(fr: "Trouvé", en: "Found")

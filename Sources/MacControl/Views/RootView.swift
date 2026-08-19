@@ -114,9 +114,6 @@ struct MenuBarContent: View {
         Button(model.preferences.paused ? L10n.resume : L10n.pause) {
             model.togglePause()
         }
-        Button(L10n.showWidgets) {
-            model.preferences.desktopWidgets.toggle()
-        }
         Divider()
         Button(L10n.dashboard) { openSection(.dashboard) }
         Button(L10n.temperatures) { openSection(.temperatures) }
