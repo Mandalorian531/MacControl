@@ -40,6 +40,11 @@ struct SettingsView: View {
                     model.resetPeaks()
                 }
             }
+            Section(L10n.privacy) {
+                Text(L10n.privacyNote)
+                    .font(TypeScale.caption)
+                    .foregroundStyle(Palette.muted)
+            }
             Section(L10n.about) {
                 LabeledContent(L10n.name, value: model.machine.hostname)
                 LabeledContent(L10n.model, value: "\(model.machine.family.title) · \(model.machine.modelID)")

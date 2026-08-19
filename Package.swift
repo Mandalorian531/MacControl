@@ -18,7 +18,8 @@ let package = Package(
             path: "Sources/MacControlCore",
             linkerSettings: [
                 .linkedFramework("IOKit"),
-                .linkedFramework("AppKit")
+                .linkedFramework("AppKit"),
+                .linkedFramework("Security")
             ]
         ),
         .executableTarget(

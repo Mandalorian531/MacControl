@@ -1,10 +1,18 @@
 # MacControl
 
-Moniteur natif pour Mac Apple Silicon : CPU P/E, RAM, disque, réseau, températures, ventilos, batterie, processus.
+Moniteur natif pour Mac Apple Silicon : CPU P/E, RAM, disque, réseau, températures, ventilos, batterie, processus, désinstallation avec résidus.
 
 Pas sur l’App Store. Le code est public, le `.dmg` est dans les [Releases](https://github.com/Mandalorian531/MacControl/releases). Tu peux l’utiliser et le modifier pour toi. Tu ne peux pas le vendre.
 
 Testée sur un Mac mini M4. Les autres M1–M5 (Air, Pro, iMac, Studio, Mini) passent par les mêmes APIs.
+
+## Confidentialité
+
+Rien ne quitte ton Mac. Pas de compte, pas de télémétrie, pas de serveur à nous. CPU, températures, apps : tout reste local.
+
+L’app est volontairement légère. L’échantillonnage tourne hors du thread UI. Tu peux la mettre en pause. Fenêtre cachée : presque rien.
+
+Le code est ici, tu peux vérifier. Les seules actions qui touchent le système (ventilo manuel, Corbeille) attendent ta confirmation. Pas de nettoyage caché, pas d’envoi de données.
 
 ## Installer
 

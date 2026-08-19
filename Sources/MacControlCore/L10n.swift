@@ -133,6 +133,11 @@ public enum L10n {
     public static let resetPeaks = pick(fr: "Réinitialiser les pics", en: "Reset peaks")
     public static let activityMonitor = pick(fr: "Moniteur d’activité", en: "Activity Monitor")
     public static let about = pick(fr: "À propos", en: "About")
+    public static let privacy = pick(fr: "Confidentialité", en: "Privacy")
+    public static let privacyNote = pick(
+        fr: "Rien ne quitte ton Mac. Pas de compte, pas de télémétrie, pas de serveur. Les mesures restent en local. L’app est légère : échantillonnage hors du thread UI, pause possible, presque rien quand la fenêtre est cachée. Le code est public. Les seules actions qui touchent le système, ventilo manuel ou Corbeille, demandent ta confirmation.",
+        en: "Nothing leaves your Mac. No account, no telemetry, no server. Metrics stay local. The app is light: sampling off the UI thread, pause anytime, almost idle when the window is hidden. The code is public. The only system-touching actions, manual fan or Trash, wait for your confirmation."
+    )
     public static let userCPU = pick(fr: "User", en: "User")
     public static let systemCPU = pick(fr: "Système", en: "System")
     public static let session = pick(fr: "Session", en: "Session")
@@ -140,6 +145,46 @@ public enum L10n {
     public static let load15 = pick(fr: "Charge 1 / 5 / 15", en: "Load 1 / 5 / 15")
     public static let path = pick(fr: "Chemin", en: "Path")
     public static let idle = pick(fr: "Inactif", en: "Idle")
+    public static let apps = pick(fr: "Apps", en: "Apps")
+    public static let leftovers = pick(fr: "Résidus", en: "Leftovers")
+    public static let uninstall = pick(fr: "Désinstaller", en: "Uninstall")
+    public static let removeResidues = pick(fr: "Supprimer les résidus", en: "Remove leftovers")
+    public static let verify = pick(fr: "Vérifier", en: "Verify")
+    public static let signature = pick(fr: "Signature", en: "Signature")
+    public static let signedOK = pick(fr: "Valide", en: "Valid")
+    public static let unsigned = pick(fr: "Non signée", en: "Unsigned")
+    public static let signatureInvalid = pick(fr: "Invalide", en: "Invalid")
+    public static let hideSystem = pick(fr: "Masquer les apps système", en: "Hide system apps")
+    public static let version = pick(fr: "Version", en: "Version")
+    public static let size = pick(fr: "Taille", en: "Size")
+    public static let confirmUninstall = pick(
+        fr: "Mettre cette app et ses résidus à la Corbeille ?",
+        en: "Move this app and its leftovers to the Trash?"
+    )
+    public static let confirmResidues = pick(
+        fr: "Mettre ces résidus à la Corbeille ?",
+        en: "Move these leftovers to the Trash?"
+    )
+    public static let leftoversHint = pick(
+        fr: "Scan limité à ta bibliothèque utilisateur. Rien n’est effacé hors Corbeille. Les apps Apple et /System sont protégées.",
+        en: "Scan stays in your user Library. Everything goes to Trash, not wiped. Apple apps and /System stay protected."
+    )
+    public static let cannotUninstallSystem = pick(
+        fr: "Cette app système ne se désinstalle pas d’ici.",
+        en: "This system app cannot be uninstalled here."
+    )
+    public static let residueKindApp = pick(fr: "Application", en: "Application")
+    public static let residueKindSupport = pick(fr: "Support", en: "Support")
+    public static let residueKindPrefs = pick(fr: "Préférences", en: "Preferences")
+    public static let residueKindCache = pick(fr: "Cache", en: "Cache")
+    public static let residueKindLogs = pick(fr: "Journaux", en: "Logs")
+    public static let residueKindContainer = pick(fr: "Conteneur", en: "Container")
+    public static let residueKindAgent = pick(fr: "Agent", en: "Agent")
+    public static let residueKindState = pick(fr: "État", en: "State")
+    public static let trashDone = pick(fr: "Envoyé à la Corbeille", en: "Moved to Trash")
+    public static let noResidues = pick(fr: "Aucun résidu trouvé.", en: "No leftovers found.")
+    public static let scanning = pick(fr: "Analyse…", en: "Scanning…")
+    public static let selectApp = pick(fr: "Choisis une app pour voir ses résidus.", en: "Select an app to see leftovers.")
 }
 
 public enum RefreshPace: String, CaseIterable, Identifiable, Sendable {

@@ -29,11 +29,22 @@ final class AppModel: ObservableObject {
     @Published var selfUsage = SelfSnapshot(cpu: 0, memory: 0)
     @Published var windowVisible = true
     @Published var preferences = Preferences()
+    @Published var installedApps: [InstalledApp] = []
+    @Published var appQuery = ""
+    @Published var hideSystemApps = true
+    @Published var selectedAppID: String?
+    @Published var residues: [ResidueItem] = []
+    @Published var residuesLoading = false
+    @Published var pendingUninstall: InstalledApp?
+    @Published var pendingResidues = false
+    @Published var janitorStatus: String?
 
     let machine = MachineInfo.current
 
     private let sampler = MetricsSampler()
+    private let janitor = AppJanitor()
     private let queue = DispatchQueue(label: "com.cgs.maccontrol.sample", qos: .utility)
+    private let janitorQueue = DispatchQueue(label: "com.cgs.maccontrol.janitor", qos: .utility)
     private let live = LiveConfig()
     private var timer: DispatchSourceTimer?
     private var fanWriteTask: Task<Void, Never>?
@@ -62,6 +73,29 @@ final class AppModel: ObservableObject {
         case .memory: return rows.sorted { $0.memory > $1.memory }
         case .name: return rows.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         }
+    }
+
+    var filteredApps: [InstalledApp] {
+        var rows = installedApps
+        if hideSystemApps {
+            rows = rows.filter { !$0.isSystem }
+        }
+        let query = appQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !query.isEmpty {
+            rows = rows.filter {
+                $0.name.localizedCaseInsensitiveContains(query) || $0.bundleID.localizedCaseInsensitiveContains(query)
+            }
+        }
+        return rows
+    }
+
+    var selectedApp: InstalledApp? {
+        guard let selectedAppID else { return nil }
+        return installedApps.first { $0.id == selectedAppID }
+    }
+
+    var leftoverSize: UInt64 {
+        residues.filter { $0.kind != .application }.map(\.size).reduce(0, +)
     }
 
     init() {
@@ -97,8 +131,83 @@ final class AppModel: ObservableObject {
             .sink { [live] value in live.menuFan = value }
             .store(in: &cancellables)
         $section
-            .sink { [live] section in live.section = section }
+            .sink { [weak self, live] section in
+                live.section = section
+                if section == .apps {
+                    self?.refreshApps()
+                }
+            }
             .store(in: &cancellables)
+        $selectedAppID
+            .sink { [weak self] id in self?.loadResidues(id) }
+            .store(in: &cancellables)
+    }
+
+    func refreshApps() {
+        janitorQueue.async { [weak self, janitor] in
+            let rows = janitor.listApps()
+            DispatchQueue.main.async {
+                self?.installedApps = rows
+            }
+        }
+    }
+
+    func uninstallSelected() {
+        guard let app = selectedApp, !app.isSystem else {
+            janitorStatus = L10n.cannotUninstallSystem
+            return
+        }
+        let paths = residues.map(\.path)
+        trash(paths)
+    }
+
+    func removeResiduesOnly() {
+        let paths = residues.filter { $0.kind != .application }.map(\.path)
+        trash(paths)
+    }
+
+    func revealApp(_ app: InstalledApp) {
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: app.path)])
+    }
+
+    func revealResidue(_ item: ResidueItem) {
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
+    }
+
+    private func loadResidues(_ id: String?) {
+        residues = []
+        guard let app = installedApps.first(where: { $0.id == id }) else {
+            residuesLoading = false
+            return
+        }
+        residuesLoading = true
+        janitorQueue.async { [weak self, janitor] in
+            let items = janitor.residues(for: app)
+            DispatchQueue.main.async {
+                guard self?.selectedAppID == id else { return }
+                self?.residues = items
+                self?.residuesLoading = false
+            }
+        }
+    }
+
+    private func trash(_ paths: [String]) {
+        guard !paths.isEmpty else { return }
+        janitorQueue.async { [weak self, janitor] in
+            do {
+                try janitor.moveToTrash(paths)
+                DispatchQueue.main.async {
+                    self?.janitorStatus = L10n.trashDone
+                    self?.residues = []
+                    self?.selectedAppID = nil
+                    self?.refreshApps()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.janitorStatus = String(describing: error)
+                }
+            }
+        }
     }
 
     func start() {
