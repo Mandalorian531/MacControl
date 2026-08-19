@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Foundation
 import MacControlCore
+import WidgetKit
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -59,8 +60,8 @@ final class AppModel: ObservableObject {
     private let queue = DispatchQueue(label: "com.cgs.maccontrol.sample", qos: .utility)
     private let janitorQueue = DispatchQueue(label: "com.cgs.maccontrol.janitor", qos: .utility)
     private let live = LiveConfig()
-    private let desktopWidgets = DesktopWidgetController()
     private var timer: DispatchSourceTimer?
+    private var lastWidgetReload = Date.distantPast
     private var fanWriteTask: Task<Void, Never>?
     private var lastMenu = ""
     private var cancellables = Set<AnyCancellable>()
@@ -217,15 +218,8 @@ final class AppModel: ObservableObject {
         fanTarget = fan.targetRPM > 0 ? fan.targetRPM : max(fan.minRPM, 1500)
         live.menuTemp = preferences.menuTemp
         live.menuFan = preferences.menuFan
-        applyWidgetLiveFlags()
         preferences.objectWillChange
-            .sink { [weak self] _ in
-                self?.objectWillChange.send()
-                DispatchQueue.main.async {
-                    self?.applyWidgetLiveFlags()
-                    self?.desktopWidgets.sync()
-                }
-            }
+            .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
         preferences.$alwaysOnTop
             .dropFirst()
@@ -469,8 +463,7 @@ final class AppModel: ObservableObject {
         restartTimer()
         NSApplication.shared.appearance = nil
         Self.applyAlwaysOnTop(preferences.alwaysOnTop)
-        applyWidgetLiveFlags()
-        desktopWidgets.attach(self)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func showMainWindow() {
@@ -479,28 +472,6 @@ final class AppModel: ObservableObject {
             window.makeKeyAndOrderFront(nil)
         }
         Self.applyAlwaysOnTop(preferences.alwaysOnTop)
-    }
-
-    func hideDesktopWidget(_ kind: DesktopWidgetKind) {
-        switch kind {
-        case .cpu: preferences.widgetCPU = false
-        case .memory: preferences.widgetRAM = false
-        case .temperature: preferences.widgetTemp = false
-        case .fan: preferences.widgetFan = false
-        case .battery: preferences.widgetBattery = false
-        case .disk: preferences.widgetDisk = false
-        }
-        desktopWidgets.sync()
-    }
-
-    func resetDesktopWidgets() {
-        desktopWidgets.resetPositions()
-    }
-
-    private func applyWidgetLiveFlags() {
-        live.widgetsActive = preferences.hasActiveDesktopWidget
-        live.widgetTemp = preferences.desktopWidgets && preferences.widgetTemp
-        live.widgetFan = preferences.desktopWidgets && preferences.widgetFan
     }
 
     func setWindowVisible(_ visible: Bool) {
@@ -534,15 +505,15 @@ final class AppModel: ObservableObject {
             guard !live.paused else { return }
             let ticks = live.bump()
             let visible = live.visible
-            if !visible, !live.widgetsActive, !ticks.isMultiple(of: 2) { return }
+            if !visible, !ticks.isMultiple(of: 2) { return }
             let section = live.section
             let onDash = section == .dashboard
             let request = SampleRequest(
                 processes: LiveConfig.processDepth(visible: visible, section: section, ticks: ticks),
                 fullSensors: visible && section == .temperatures,
                 diskIO: visible && onDash && ticks.isMultiple(of: 3),
-                fan: (visible && (onDash || section == .fan)) || live.menuFan || live.widgetFan,
-                thermal: (visible && (onDash || section == .temperatures)) || live.menuTemp || live.widgetTemp,
+                fan: (visible && (onDash || section == .fan)) || live.menuFan,
+                thermal: (visible && (onDash || section == .temperatures)) || live.menuTemp,
                 network: visible && onDash
             )
             let bundle = sampler.sample(request)
@@ -653,6 +624,14 @@ final class AppModel: ObservableObject {
             lastMenu = nextMenu
             menuBarText = nextMenu
         }
+        reloadWidgetsIfNeeded()
+    }
+
+    private func reloadWidgetsIfNeeded() {
+        let now = Date()
+        guard now.timeIntervalSince(lastWidgetReload) >= 30 else { return }
+        lastWidgetReload = now
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func menuText() -> String {
@@ -696,9 +675,6 @@ private final class LiveConfig: @unchecked Sendable {
     var visible = true
     var menuTemp = true
     var menuFan = true
-    var widgetsActive = false
-    var widgetTemp = false
-    var widgetFan = false
     var section: AppSection = .dashboard
     private var ticks = 0
     private let lock = NSLock()

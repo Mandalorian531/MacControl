@@ -1,8 +1,16 @@
 # MacControl
 
+<p align="center">
+  <img src="docs/promo/hero.jpg" alt="MacControl" width="880">
+</p>
+
 Utilitaire natif pour Mac Apple Silicon. MacControl affiche l’état de la machine et permet de désinstaller des applications, d’en retirer les fichiers restants, et de libérer de l’espace en envoyant caches et fichiers inutiles à la Corbeille.
 
 Le code source est public. Les versions sont publiées sur GitHub, hors de l’App Store. La licence autorise un usage personnel et éducatif. La revente est interdite.
+
+<p align="center">
+  <img src="docs/promo/dashboard.jpg" alt="Vue d’ensemble MacControl" width="880">
+</p>
 
 ## Fonctions
 
@@ -10,10 +18,14 @@ Le code source est public. Les versions sont publiées sur GitHub, hors de l’A
 - Ventilateur : lecture via le SMC, réglage manuel après autorisation administrateur
 - Processus : liste, recherche, arrêt normal ou forcé
 - Applications : contrôle de signature, désinstallation, fichiers restants
-- Nettoyage : caches, journaux, restes d’outils de développement, fichiers cachés
+- Nettoyage : caches, journaux, restes d’outils de développement, fichiers cachés, aperçu des volumes
 - Barre de menus : processeur, mémoire, température, ventilateur, batterie
-- Widgets bureau : processeur, mémoire, température, ventilateur, batterie, disque, sur le fond d’écran
+- Widgets macOS : aperçu, processeur, mémoire, température, ventilateur, batterie, disque
 - Apparence : suit le thème clair ou sombre de macOS
+
+<p align="center">
+  <img src="docs/promo/cleanup.jpg" alt="Onglet nettoyage MacControl" width="880">
+</p>
 
 ## Configuration requise
 
@@ -30,6 +42,20 @@ L’application a été validée sur Mac mini M4. Les autres modèles Apple Sili
 3. Au premier lancement, cliquez sur l’application avec le bouton droit, puis choisissez Ouvrir.
 
 macOS affiche un avertissement Gatekeeper. Le paquet est signé de manière ad hoc, sans notarisation Apple, faute de compte Developer. Ce comportement est attendu.
+
+## Widgets
+
+<p align="center">
+  <img src="docs/promo/widgets.jpg" alt="Widgets MacControl sur le bureau" width="880">
+</p>
+
+MacControl fournit des widgets WidgetKit : aperçu, processeur, mémoire, température, ventilateur, batterie et disque.
+
+1. Place MacControl dans le dossier Applications, puis lance-le une fois.
+2. Clic droit sur le bureau, Modifier les widgets, ou ouvre le Centre de notifications.
+3. Cherche MacControl et place les widgets.
+
+Ils suivent le thème, les tailles et le chrome de macOS. Un clic rouvre l’application. La mesure se rafraîchit environ toutes les cinq minutes, plus souvent si MacControl tourne.
 
 ## Confidentialité
 

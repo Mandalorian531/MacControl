@@ -12,8 +12,6 @@ enum Palette {
     static let card = Token.color(light: Token.cardLight, dark: Token.cardDark)
     static let stroke = Token.color(light: Token.strokeLight, dark: Token.strokeDark)
     static let track = Token.color(light: Token.trackLight, dark: Token.trackDark)
-    static let widgetCard = Token.color(light: Token.widgetCardLight, dark: Token.widgetCardDark)
-    static let widgetStroke = Token.color(light: Token.widgetStrokeLight, dark: Token.widgetStrokeDark)
     static let performance = accent
     static let efficiency = Token.color(light: Token.efficiency, dark: Token.efficiencyDark)
 }
@@ -36,10 +34,6 @@ private enum Token {
     static let strokeDark = RGBA(1, 1, 1, 0.12)
     static let trackLight = RGBA(0, 0, 0, 0.08)
     static let trackDark = RGBA(1, 1, 1, 0.14)
-    static let widgetCardLight = RGBA(1, 1, 1, 0.78)
-    static let widgetCardDark = RGBA(0.11, 0.12, 0.14, 0.82)
-    static let widgetStrokeLight = RGBA(0, 0, 0, 0.10)
-    static let widgetStrokeDark = RGBA(1, 1, 1, 0.16)
 
     static func color(light: RGBA, dark: RGBA) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
@@ -84,8 +78,6 @@ enum Layout {
     static let cardMinHeight: CGFloat = 176
     static let sparklineHeight: CGFloat = 28
     static let coreRowHeight: CGFloat = 22
-    static let widgetWidth: CGFloat = 176
-    static let widgetHeight: CGFloat = 96
 }
 
 enum UsageTone {

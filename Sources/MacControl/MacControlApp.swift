@@ -12,6 +12,7 @@ struct MacControlApp: App {
                 .frame(minWidth: 860, minHeight: 540)
                 .background(Palette.background)
                 .onAppear { model.start() }
+                .onOpenURL { _ in model.showMainWindow() }
         }
         .defaultSize(width: 980, height: 640)
         .commands {

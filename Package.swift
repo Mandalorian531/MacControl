@@ -10,7 +10,8 @@ let package = Package(
     ],
     products: [
         .executable(name: "MacControl", targets: ["MacControl"]),
-        .executable(name: "smc-helper", targets: ["SMCHelper"])
+        .executable(name: "smc-helper", targets: ["SMCHelper"]),
+        .executable(name: "MacControlWidgets", targets: ["MacControlWidgets"])
     ],
     targets: [
         .target(
@@ -30,7 +31,25 @@ let package = Package(
                 .linkedFramework("SwiftUI"),
                 .linkedFramework("AppKit"),
                 .linkedFramework("IOKit"),
-                .linkedFramework("ServiceManagement")
+                .linkedFramework("ServiceManagement"),
+                .linkedFramework("WidgetKit")
+            ]
+        ),
+        .executableTarget(
+            name: "MacControlWidgets",
+            dependencies: ["MacControlCore"],
+            path: "Sources/MacControlWidgets",
+            swiftSettings: [
+                .unsafeFlags(["-parse-as-library"])
+            ],
+            linkerSettings: [
+                .linkedFramework("WidgetKit"),
+                .linkedFramework("SwiftUI"),
+                .linkedFramework("AppKit"),
+                .unsafeFlags([
+                    "-Xlinker", "-e",
+                    "-Xlinker", "_NSExtensionMain"
+                ])
             ]
         ),
         .executableTarget(
