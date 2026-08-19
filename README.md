@@ -1,30 +1,56 @@
 # MacControl
 
 <p align="center">
-  <img src="docs/promo/hero.jpg" alt="MacControl" width="880">
+  <img src="Resources/AppIcon.png" alt="MacControl" width="128">
 </p>
 
-Utilitaire natif pour Mac Apple Silicon. MacControl affiche l’état de la machine et permet de désinstaller des applications, d’en retirer les fichiers restants, et de libérer de l’espace en envoyant caches et fichiers inutiles à la Corbeille.
+Utilitaire natif pour Mac Apple Silicon. MacControl affiche l’état de la machine, désinstalle des applications avec leurs restes, et envoie caches et fichiers inutiles à la Corbeille.
 
-Le code source est public. Les versions sont publiées sur GitHub, hors de l’App Store. La licence autorise un usage personnel et éducatif. La revente est interdite.
+Le code source est public. Les versions sont sur GitHub, hors de l’App Store. Usage personnel et éducatif autorisé. La revente est interdite.
 
 <p align="center">
-  <img src="docs/promo/dashboard.jpg" alt="Vue d’ensemble MacControl" width="880">
+  <img src="docs/promo/home.jpg" alt="Vue d’ensemble" width="880">
 </p>
+
+## Nouveautés
+
+- Widgets WidgetKit : aperçu, processeur, mémoire, température, ventilateur, batterie, disque. Ils suivent le thème et les tailles de macOS. À ajouter depuis le bureau ou le Centre de notifications.
+- Onglet nettoyage avec aperçu : volume trouvé, sélection, nombre de fichiers, espace ultra sensible, répartition par catégorie.
+- Sauvegardes iPhone / iPad et archives Xcode : jamais cochées toutes seules. Une double alerte est exigée.
+- Thème clair ou sombre selon macOS.
 
 ## Fonctions
 
 - Vue d’ensemble : processeur (cœurs P et E), mémoire, disque, réseau, températures, batterie
-- Ventilateur : lecture via le SMC, réglage manuel après autorisation administrateur
+- Températures : SoC, stockage, GPU, liste des capteurs
+- Ventilateur : lecture via le SMC, réglage manuel après mot de passe administrateur
 - Processus : liste, recherche, arrêt normal ou forcé
-- Applications : contrôle de signature, désinstallation, fichiers restants
-- Nettoyage : caches, journaux, restes d’outils de développement, fichiers cachés, aperçu des volumes
+- Applications : signature, désinstallation, fichiers restants
+- Nettoyage : caches, navigateurs, journaux, outils de développement, fichiers cachés
 - Barre de menus : processeur, mémoire, température, ventilateur, batterie
-- Widgets macOS : aperçu, processeur, mémoire, température, ventilateur, batterie, disque
-- Apparence : suit le thème clair ou sombre de macOS
 
 <p align="center">
-  <img src="docs/promo/cleanup.jpg" alt="Onglet nettoyage MacControl" width="880">
+  <img src="docs/promo/temp.jpg" alt="Températures" width="880">
+</p>
+
+<p align="center">
+  <img src="docs/promo/ventil.jpg" alt="Ventilateur" width="880">
+</p>
+
+<p align="center">
+  <img src="docs/promo/process.jpg" alt="Processus" width="880">
+</p>
+
+<p align="center">
+  <img src="docs/promo/apps.jpg" alt="Applications" width="880">
+</p>
+
+<p align="center">
+  <img src="docs/promo/clean.jpg" alt="Nettoyage" width="880">
+</p>
+
+<p align="center">
+  <img src="docs/promo/settings.jpg" alt="Réglages" width="880">
 </p>
 
 ## Configuration requise
@@ -33,41 +59,35 @@ Le code source est public. Les versions sont publiées sur GitHub, hors de l’A
 - macOS 14 Sonoma ou version ultérieure
 - Les Mac Intel ne sont pas pris en charge
 
-L’application a été validée sur Mac mini M4. Les autres modèles Apple Silicon s’appuient sur les mêmes interfaces système.
+Validé sur Mac mini M4. Les autres Apple Silicon passent par les mêmes interfaces système.
 
 ## Installation
 
 1. Téléchargez `MacControl.dmg` depuis la [dernière version](https://github.com/Mandalorian531/MacControl/releases).
-2. Ouvrez l’image disque et placez MacControl dans le dossier Applications.
-3. Au premier lancement, cliquez sur l’application avec le bouton droit, puis choisissez Ouvrir.
+2. Placez MacControl dans le dossier Applications.
+3. Au premier lancement, clic droit, puis Ouvrir.
 
-macOS affiche un avertissement Gatekeeper. Le paquet est signé de manière ad hoc, sans notarisation Apple, faute de compte Developer. Ce comportement est attendu.
+Gatekeeper affiche un avertissement. Le paquet est signé de manière ad hoc, sans notarisation Apple. C’est attendu.
 
 ## Widgets
 
-<p align="center">
-  <img src="docs/promo/widgets.jpg" alt="Widgets MacControl sur le bureau" width="880">
-</p>
-
-MacControl fournit des widgets WidgetKit : aperçu, processeur, mémoire, température, ventilateur, batterie et disque.
-
-1. Place MacControl dans le dossier Applications, puis lance-le une fois.
+1. Place MacControl dans Applications, puis lance-le une fois.
 2. Clic droit sur le bureau, Modifier les widgets, ou ouvre le Centre de notifications.
 3. Cherche MacControl et place les widgets.
 
-Ils suivent le thème, les tailles et le chrome de macOS. Un clic rouvre l’application. La mesure se rafraîchit environ toutes les cinq minutes, plus souvent si MacControl tourne.
+Un clic sur un widget rouvre l’application. La mesure se rafraîchit environ toutes les cinq minutes, plus souvent si MacControl tourne.
 
 ## Confidentialité
 
-Aucune donnée ne quitte l’ordinateur. Il n’existe ni compte, ni télémétrie, ni serveur distant.
+Rien ne quitte l’ordinateur. Pas de compte, pas de télémétrie, pas de serveur.
 
-Les mesures restent locales. Les actions qui modifient le système (réglage du ventilateur, envoi à la Corbeille) demandent une confirmation. Le nettoyage se limite au compte utilisateur. Les dossiers système, le trousseau, Mail et les clés SSH ne sont pas analysés.
+Les mesures restent locales. Ventilateur manuel et envoi à la Corbeille demandent une confirmation. Le nettoyage se limite au compte utilisateur. Système, trousseau, Mail et clés SSH restent hors scan.
 
 ## Ventilateur
 
-La vitesse est lue dans le SMC. Un Mac à plusieurs ventilateurs les affiche tous. Un Mac sans ventilateur l’indique.
+La vitesse vient du SMC. Plusieurs ventilateurs s’affichent tous. Un Mac sans ventilateur l’indique.
 
-Le mode manuel demande un mot de passe administrateur lors de la première utilisation. Un régime trop bas peut faire monter la température, en particulier sur un ordinateur portable. Revenez ensuite en mode automatique.
+Le mode manuel demande un mot de passe administrateur la première fois. Une vitesse trop basse fait monter la température, surtout sur un portable. Revenez ensuite en automatique.
 
 ## Compilation
 
