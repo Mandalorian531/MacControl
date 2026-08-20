@@ -186,6 +186,15 @@ public enum L10n {
     public static let residueKindAgent = pick(fr: "Agent", en: "Agent")
     public static let residueKindState = pick(fr: "État", en: "State")
     public static let trashDone = pick(fr: "Envoyé à la Corbeille", en: "Moved to Trash")
+    public static let trashNeedsAdmin = pick(
+        fr: "Cette application est protégée. macOS demande le mot de passe administrateur pour la mettre à la Corbeille.",
+        en: "This app is protected. macOS asks for the administrator password to move it to Trash."
+    )
+    public static let trashCancelled = pick(fr: "Corbeille annulée.", en: "Trash cancelled.")
+    public static let trashAdminFailed = pick(
+        fr: "Impossible de mettre à la Corbeille, même avec les droits administrateur.",
+        en: "Could not move to Trash, even with administrator rights."
+    )
     public static let noResidues = pick(fr: "Aucun fichier restant.", en: "No leftover files.")
     public static let scanning = pick(fr: "Analyse…", en: "Scanning…")
     public static let selectApp = pick(fr: "Sélectionnez une application pour voir ses fichiers restants.", en: "Select an app to see leftover files.")

@@ -386,7 +386,7 @@ final class AppModel: ObservableObject {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self?.junkStatus = String(describing: error)
+                    self?.junkStatus = Self.trashMessage(error)
                 }
             }
         }
@@ -404,7 +404,7 @@ final class AppModel: ObservableObject {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self?.junkStatus = String(describing: error)
+                    self?.junkStatus = Self.trashMessage(error)
                 }
             }
         }
@@ -452,7 +452,7 @@ final class AppModel: ObservableObject {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self?.janitorStatus = String(describing: error)
+                    self?.janitorStatus = Self.trashMessage(error)
                 }
             }
         }
@@ -659,6 +659,10 @@ final class AppModel: ObservableObject {
         case .failed(let message):
             fanStatus = message
         }
+    }
+
+    private static func trashMessage(_ error: Error) -> String {
+        (error as? LocalizedError)?.errorDescription ?? L10n.trashAdminFailed
     }
 
     static func applyAlwaysOnTop(_ enabled: Bool) {

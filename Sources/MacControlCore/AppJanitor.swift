@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Security
 
@@ -62,6 +63,20 @@ public struct ResidueItem: Identifiable, Sendable {
     public var size: UInt64
 }
 
+public enum JanitorError: Error, LocalizedError, Sendable {
+    case adminCancelled
+    case adminFailed
+    case failed
+
+    public var errorDescription: String? {
+        switch self {
+        case .adminCancelled: L10n.trashCancelled
+        case .adminFailed: L10n.trashAdminFailed
+        case .failed: L10n.trashAdminFailed
+        }
+    }
+}
+
 public final class AppJanitor: @unchecked Sendable {
     private let fileManager = FileManager.default
     private let home: URL
@@ -109,8 +124,70 @@ public final class AppJanitor: @unchecked Sendable {
             let url = URL(fileURLWithPath: path)
             guard isSafeToTrash(url) else { continue }
             var resulting: NSURL?
-            try fileManager.trashItem(at: url, resultingItemURL: &resulting)
+            do {
+                try fileManager.trashItem(at: url, resultingItemURL: &resulting)
+            } catch {
+                guard Self.isPermissionDenied(error) else { throw JanitorError.failed }
+                try privilegedTrash(url)
+            }
         }
+    }
+
+    private func privilegedTrash(_ url: URL) throws {
+        let trash = home.appendingPathComponent(".Trash")
+        try fileManager.createDirectory(at: trash, withIntermediateDirectories: true)
+        var dest = trash.appendingPathComponent(url.lastPathComponent)
+        if fileManager.fileExists(atPath: dest.path) {
+            let stamp = Int(Date().timeIntervalSince1970)
+            dest = trash.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent) \(stamp).\(url.pathExtension)")
+        }
+        let command = "/bin/mv -n \(Self.shellQuote(url.path)) \(Self.shellQuote(dest.path))"
+        let script = "do shell script \"\(Self.appleQuote(command))\" with administrator privileges"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", script]
+        let stderr = Pipe()
+        process.standardOutput = Pipe()
+        process.standardError = stderr
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            throw JanitorError.adminFailed
+        }
+        if process.terminationStatus == 0 { return }
+        let err = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        if err.localizedCaseInsensitiveContains("cancel") || err.contains("-128") {
+            throw JanitorError.adminCancelled
+        }
+        throw JanitorError.adminFailed
+    }
+
+    private static func isPermissionDenied(_ error: Error) -> Bool {
+        let ns = error as NSError
+        if ns.domain == NSCocoaErrorDomain, ns.code == CocoaError.fileWriteNoPermission.rawValue {
+            return true
+        }
+        if ns.domain == NSPOSIXErrorDomain, ns.code == Int(EACCES) || ns.code == Int(EPERM) {
+            return true
+        }
+        if ns.domain == NSOSStatusErrorDomain, ns.code == -5000 {
+            return true
+        }
+        if let nested = ns.userInfo[NSUnderlyingErrorKey] as? NSError {
+            return isPermissionDenied(nested)
+        }
+        return false
+    }
+
+    private static func shellQuote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    private static func appleQuote(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     public func emptyTrash() throws {
